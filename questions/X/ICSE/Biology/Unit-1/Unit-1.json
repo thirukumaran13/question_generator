@@ -1,0 +1,87 @@
+[
+  {
+    "context": "The cell is the <b>basic structural</b> and <i>functional unit</i> of all living organisms. It was first observed by <b>Robert Hooke</b> in <u>1665</u>. The cell theory states:<ul><li>All living things are made of cells.</li><li>The cell is the <b>basic unit</b> of life.</li><li>All cells arise from <i>pre-existing</i> cells.</li></ul>",
+    "questions": [
+      {
+        "question": "Which of the following is considered the <b>'structural and functional unit'</b> of all living organisms?",
+        "choices": ["Organ", "Tissue", "Cell", "Protoplasm"],
+        "answer": 2,
+        "type": "Multi Choice",
+        "reason": "The cell is the basic structural and functional unit of the body, and all living beings are made up of cells."
+      },
+      {
+        "question": "The cell wall in plant cells is primarily composed of ______.",
+        "choices": [],
+        "answer": "Cellulose",
+        "type": "Fill in the blanks",
+        "reason": "The cell wall is a non-living rigid layer in plant cells mainly composed of cellulose."
+      },
+      {
+        "question": "Mitochondria",
+        "answer": "ATP production",
+        "type": "Match the following",
+        "reason": "Mitochondria are the powerhouse of the cell, producing ATP through cellular respiration."
+      },
+      {
+        "question": "Ribosomes",
+        "answer": "Protein synthesis",
+        "type": "Match the following",
+        "reason": "Ribosomes are the site of protein synthesis in the cell."
+      },
+      {
+        "question": "Chloroplast",
+        "answer": "Photosynthesis",
+        "type": "Match the following",
+        "reason": "Chloroplasts contain chlorophyll and carry out photosynthesis in plant cells."
+      }
+    ]
+  },
+  {
+    "question": "Which cell organelle is known as the <i>'suicide bag'</i> of the cell?",
+    "choices": ["Mitochondria", "Ribosomes", "Lysosomes", "Golgi apparatus"],
+    "answer": 2,
+    "type": "Multi Choice",
+    "reason": "Lysosomes contain hydrolytic enzymes that destroy organelles when the cell is old or injured, earning them the name 'suicide bags'."
+  },
+  {
+    "question": "Arrange the following stages of cell division in the correct sequence.",
+    "choices": ["Telophase", "Prophase", "Anaphase", "Metaphase"],
+    "answer": "Prophase → Metaphase → Anaphase → Telophase",
+    "type": "Arrange in logical sequence",
+    "reason": "Mitosis proceeds in the order Prophase → Metaphase → Anaphase → Telophase (PMAT)."
+  },
+  {
+    "question": "Describe the role of the nucleus in a cell.",
+    "choices": [],
+    "answer": "The nucleus is the <b>control centre</b> of the cell. It contains <b>DNA</b> (genetic material) that directs all cellular activities, including:<ul><li><i>Growth</i></li><li><i>Metabolism</i></li><li><i>Reproduction</i></li></ul>",
+    "type": "3 marks",
+    "reason": "The nucleus regulates gene expression and manages cell division through the DNA it contains."
+  },
+  {
+    "question": "Explain the difference between prokaryotic and eukaryotic cells.",
+    "choices": [],
+    "answer": "Prokaryotic cells lack a membrane-bound nucleus and organelles (e.g., bacteria). Eukaryotic cells have a true nucleus and membrane-bound organelles (e.g., plant and animal cells).",
+    "type": "5 marks",
+    "reason": "The key distinction is the presence or absence of a membrane-bound nucleus."
+  },
+  {
+    "question": "The ______ is known as the powerhouse of the cell.",
+    "choices": [],
+    "answer": "Mitochondria",
+    "type": "Fill in the blanks",
+    "reason": "Mitochondria produce ATP through cellular respiration, supplying the cell with energy."
+  },
+  {
+    "question": "The chemical formula for glucose is C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>. During photosynthesis, CO<sub>2</sub> + H<sub>2</sub>O &rarr; C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> + O<sub>2</sub>. Which organelle performs this reaction?",
+    "choices": ["Mitochondria", "Chloroplast", "Nucleus", "Vacuole"],
+    "answer": 1,
+    "type": "Multi Choice",
+    "reason": "Chloroplasts contain chlorophyll and are the site of photosynthesis in plant cells."
+  },
+  {
+    "question": "Mitochondria are often called the powerhouse of the cell because they produce ATP through cellular respiration.",
+    "answer": "True",
+    "type": "True or False",
+    "reason": "Mitochondria generate ATP via cellular respiration, supplying energy for all cellular activities."
+  }
+]

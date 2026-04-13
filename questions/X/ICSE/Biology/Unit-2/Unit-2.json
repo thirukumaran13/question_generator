@@ -1,0 +1,91 @@
+[
+  {
+    "context": "<b>Transpiration</b> is the process by which water is lost from the aerial parts of a plant in the form of <i>water vapour</i>. It mainly occurs through tiny pores called <b>stomata</b>, which are found on the surface of leaves. The opening and closing of stomata is controlled by <b>guard cells</b>.",
+    "questions": [
+      {
+        "question": "Which of the following is the <b>main site</b> of transpiration in plants?",
+        "choices": ["Root", "Stem", "Leaf", "Flower"],
+        "answer": 2,
+        "type": "Multi Choice",
+        "reason": "Most transpiration occurs through the stomata on leaves, making the leaf the primary site."
+      },
+      {
+        "question": "The opening and closing of stomata is regulated by ______.",
+        "choices": [],
+        "answer": "Guard cells",
+        "type": "Fill in the blanks",
+        "reason": "Guard cells surround each stoma and control its aperture by changing their turgor pressure."
+      },
+      {
+        "question": "Stomata",
+        "answer": "Pores for gas exchange and transpiration",
+        "type": "Match the following",
+        "reason": "Stomata are microscopic pores mainly on leaf surfaces that allow gas exchange and transpiration."
+      },
+      {
+        "question": "Guard cells",
+        "answer": "Regulate opening and closing of stomata",
+        "type": "Match the following",
+        "reason": "Guard cells control the size of the stomatal aperture by absorbing or losing water."
+      },
+      {
+        "question": "Lenticels",
+        "answer": "Transpiration through bark of stem",
+        "type": "Match the following",
+        "reason": "Lenticels are small pores in the bark of woody stems through which lenticular transpiration occurs."
+      },
+      {
+        "question": "Transpiration helps in the upward movement of water through the plant.",
+        "answer": "True",
+        "type": "True or False",
+        "reason": "The loss of water through transpiration creates a transpiration pull, which helps draw water upward through the xylem."
+      }
+    ]
+  },
+  {
+    "question": "Which type of transpiration accounts for the <b>maximum</b> water loss in plants?",
+    "choices": ["Cuticular transpiration", "Stomatal transpiration", "Lenticular transpiration", "Root transpiration"],
+    "answer": 1,
+    "type": "Multi Choice",
+    "reason": "Stomatal transpiration accounts for about 80–90% of total water loss from a plant."
+  },
+  {
+    "question": "Arrange the following steps of stomatal transpiration in the correct sequence.",
+    "choices": [
+      "Water vapour diffuses out through stomata",
+      "Water evaporates from mesophyll cell walls into intercellular spaces",
+      "Stomata open due to increased turgor in guard cells",
+      "Water moves from xylem to mesophyll cells by osmosis"
+    ],
+    "answer": "Stomata open → Water moves from xylem to mesophyll → Water evaporates into intercellular spaces → Water vapour diffuses out",
+    "type": "Arrange in logical sequence",
+    "reason": "Stomata open first, water then moves from xylem to mesophyll cells, evaporates into air spaces, and finally diffuses out."
+  },
+  {
+    "question": "Explain the significance of transpiration in plants.",
+    "choices": [],
+    "answer": "Transpiration is significant because it:<ul><li>Creates a <b>transpiration pull</b> that helps water rise from roots to leaves.</li><li>Helps in the <b>absorption of minerals</b> from the soil along with water.</li><li>Cools the plant surface by <i>evaporative cooling</i>.</li><li>Maintains the <b>turgidity</b> of cells.</li></ul>",
+    "type": "5 marks",
+    "reason": "Transpiration, though sometimes called a 'necessary evil', plays vital roles in water movement, mineral absorption, and temperature regulation."
+  },
+  {
+    "question": "Name the <b>three types</b> of transpiration based on the surface through which water is lost.",
+    "choices": [],
+    "answer": "The three types are:<ol><li><b>Stomatal transpiration</b> — through stomata (80–90%)</li><li><b>Cuticular transpiration</b> — through the cuticle of leaves (5–10%)</li><li><b>Lenticular transpiration</b> — through lenticels in bark (0.1%)</li></ol>",
+    "type": "3 marks",
+    "reason": "Transpiration is classified by the surface through which water vapour escapes — stomata, cuticle, or lenticels."
+  },
+  {
+    "question": "High temperature increases the rate of transpiration.",
+    "answer": "True",
+    "type": "True or False",
+    "reason": "Higher temperatures increase the kinetic energy of water molecules, leading to faster evaporation and greater transpiration."
+  },
+  {
+    "question": "The ______ theory explains the rise of water in tall trees through transpiration pull.",
+    "choices": [],
+    "answer": "Cohesion-tension (Dixon and Jolly)",
+    "type": "Fill in the blanks",
+    "reason": "The cohesion-tension theory, proposed by Dixon and Jolly, explains how transpiration pull combined with the cohesion of water molecules drives water up the xylem."
+  }
+]

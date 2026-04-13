@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Questions File",
+  "description": "Schema for a question_generator unit JSON file. Each item is either a standalone question or a context group.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "oneOf": [
+      { "$ref": "#/definitions/contextGroup" },
+      { "$ref": "#/definitions/question" }
+    ]
+  },
+  "definitions": {
+    "contextGroup": {
+      "type": "object",
+      "description": "A group of questions sharing a common context passage",
+      "required": ["context", "questions"],
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "HTML-allowed context passage shown before the questions"
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Questions that belong to this context",
+          "items": { "$ref": "#/definitions/question" }
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "description": "A single question item",
+      "required": ["question", "answer", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Question text (HTML allowed)"
+        },
+        "choices": {
+          "type": "array",
+          "description": "Answer options; required and non-empty for Multi Choice and Arrange in logical sequence",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "answer": {
+          "description": "Integer index for Multi Choice; string for all other types",
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "string", "minLength": 1 }
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Multi Choice",
+            "Fill in the blanks",
+            "Match the following",
+            "Arrange in logical sequence",
+            "True or False",
+            "1 marks",
+            "2 marks",
+            "3 marks",
+            "4 marks",
+            "5 marks"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Explanation for the correct answer"
+        }
+      },
+      "allOf": [
+        {
+          "description": "Multi Choice: choices required (≥2 items), answer must be an integer index; all other types: answer must be a string",
+          "if": {
+            "properties": { "type": { "const": "Multi Choice" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["choices"],
+            "properties": {
+              "choices": {
+                "type": "array",
+                "minItems": 2,
+                "items": { "type": "string", "minLength": 1 }
+              },
+              "answer": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "else": {
+            "properties": {
+              "answer": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "description": "Arrange in logical sequence: choices required (≥2 items), answer remains a string",
+          "if": {
+            "properties": { "type": { "const": "Arrange in logical sequence" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["choices"],
+            "properties": {
+              "choices": {
+                "type": "array",
+                "minItems": 2,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        },
+        {
+          "description": "True or False: no choices; answer must be exactly 'True' or 'False'",
+          "if": {
+            "properties": { "type": { "const": "True or False" } },
+            "required": ["type"]
+          },
+          "then": {
+            "properties": {
+              "answer": { "type": "string", "enum": ["True", "False"] },
+              "choices": { "type": "array", "maxItems": 0 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
