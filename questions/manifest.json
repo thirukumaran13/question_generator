@@ -1,0 +1,29 @@
+{
+  "_comment": "Each unit entry points to a folder. 'files' lists every JSON file inside that folder.",
+  "entries": [
+    {
+      "class": "X",
+      "syllabus": "ICSE",
+      "subject": "Biology",
+      "unit": "Unit 1 – Cell: The Structural and Functional Unit of Life",
+      "folder": "X/ICSE/Biology/Unit-1",
+      "files": ["Unit-1.json"]
+    },
+    {
+      "class": "X",
+      "syllabus": "ICSE",
+      "subject": "Biology",
+      "unit": "Unit 2 – Transpiration",
+      "folder": "X/ICSE/Biology/Unit-2",
+      "files": ["Unit-2.json"]
+    },
+    {
+      "class": "X",
+      "syllabus": "ICSE",
+      "subject": "Mathematics",
+      "unit": "Unit 1 – Commercial Mathematics",
+      "folder": "X/ICSE/Mathematics/Unit-1",
+      "files": ["Unit-1.json"]
+    }
+  ]
+}

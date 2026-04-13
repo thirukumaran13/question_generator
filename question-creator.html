@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Question Creator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg1: #0d1b2a;
+      --bg2: #1b2d42;
+      --accent: #e76f51;
+      --accent2: #2a9d8f;
+      --surface: rgba(0,0,0,0.05);
+      --surface-hover: rgba(0,0,0,0.09);
+      --border: rgba(0,0,0,0.12);
+      --text: #1a2535;
+      --muted: rgba(0,0,0,0.45);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 50%, #0d2137 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      padding: 24px 16px 60px;
+    }
+
+    .page { max-width: 980px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 32px; }
+    .header h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #e76f51, #f4a261, #2a9d8f);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: -1px; margin-bottom: 6px;
+    }
+    .header p { color: rgba(255,255,255,0.55); font-size: 0.97rem; }
+
+    /* ── Top bar ── */
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 22px;
+    }
+    .q-count-pill {
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 50px; padding: 6px 18px;
+      font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.85);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #f0f4f9;
+      border: 1px solid #dce4ee; border-radius: 16px;
+      padding: 26px 28px; margin-bottom: 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    }
+    .card-title {
+      font-size: 1.05rem; font-weight: 700; color: #1a2535;
+      margin-bottom: 22px; display: flex; align-items: center; gap: 8px;
+    }
+    .badge {
+      background: linear-gradient(135deg, var(--accent), #f4a261);
+      color: #fff; border-radius: 50px; padding: 2px 12px;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .badge-green {
+      background: linear-gradient(135deg, var(--accent2), #52b788);
+      color: #fff; border-radius: 50px; padding: 2px 12px;
+      font-size: 0.75rem; font-weight: 700;
+    }
+
+    /* ── Form grid ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-full { grid-column: 1 / -1; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-size: 0.82rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .field label .req  { color: #f87171; margin-left: 3px; }
+    .field label .hint { font-size: 0.75rem; font-weight: 400; color: rgba(0,0,0,0.38); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+
+    input[type="text"], input[type="number"], select {
+      background: rgba(0,0,0,0.04); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; color: var(--text);
+      font-family: inherit; font-size: 0.95rem; width: 100%;
+      transition: border-color .2s, background .2s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      outline: none; border-color: var(--accent); background: rgba(0,0,0,0.06);
+    }
+    input::placeholder { color: rgba(0,0,0,0.3); }
+    select { cursor: pointer; }
+    select option { background: #fff; color: var(--text); }
+
+    /* ── WYSIWYG ── */
+    .wysiwyg-wrap {
+      border: 1px solid #c8d4e0; border-radius: 10px;
+      overflow: hidden; background: #fff; transition: border-color .2s;
+    }
+    .wysiwyg-wrap:focus-within { border-color: var(--accent); }
+    .wysiwyg-toolbar {
+      display: flex; flex-wrap: wrap; gap: 2px; padding: 5px 7px;
+      background: #f1f5f9; border-bottom: 1px solid #dde1e7;
+      align-items: center; user-select: none;
+    }
+    .wysiwyg-toolbar .tb-sep { width: 1px; height: 20px; background: #ccc; margin: 0 3px; }
+    .tb-btn {
+      background: transparent; border: 1px solid transparent; border-radius: 6px;
+      color: #374151; cursor: pointer; font-family: inherit;
+      font-size: 0.8rem; font-weight: 700; min-width: 28px; height: 27px; padding: 0 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s, color .12s, border-color .12s; white-space: nowrap;
+    }
+    .tb-btn:hover { background: #e2e8f0; color: #111; border-color: #c7d0db; }
+    .tb-btn:active { background: rgba(231,111,81,0.15); }
+    .tb-btn sup, .tb-btn sub { position: relative; vertical-align: baseline; line-height: 0; font-size: .6em; }
+    .tb-btn sup { top: -0.5em; }
+    .tb-btn sub { bottom: -0.3em; }
+    .tb-btn.latex-btn { color: #7c3aed; font-style: italic; font-size: .88rem; }
+    .tb-btn.latex-btn:hover { color: #5b21b6; background: rgba(124,58,237,.1); }
+    /* Color split-buttons */
+    .tb-color-wrap { position: relative; display: inline-flex; align-items: stretch; border-radius: 6px; overflow: hidden; border: 1px solid transparent; transition: border-color .12s; }
+    .tb-color-wrap:hover { border-color: #c7d0db; }
+    .tb-color-apply { background: transparent; border: none; cursor: pointer; font-family: inherit; font-size: .8rem; font-weight: 700; color: #374151; padding: 0 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 24px; height: 27px; transition: background .12s; }
+    .tb-color-apply:hover { background: #e2e8f0; }
+    .tb-color-drop { background: transparent; border: none; border-left: 1px solid #dde1e7; cursor: pointer; color: #666; font-size: .6rem; padding: 0 3px; display: flex; align-items: center; justify-content: center; height: 27px; transition: background .12s; }
+    .tb-color-drop:hover { background: #e2e8f0; color: #111; }
+    .tb-color-swatch { display: inline-block; width: 13px; height: 4px; border-radius: 2px; pointer-events: none; }
+    .wysiwyg-editor {
+      min-height: 80px; padding: 10px 14px;
+      color: #1a1a2e; font-size: .95rem; line-height: 1.6;
+      outline: none; overflow-wrap: break-word; word-break: break-word; background: #fff;
+    }
+    .wysiwyg-editor.compact { min-height: 44px; max-height: 120px; overflow-y: auto; }
+    .wysiwyg-editor:empty::before { content: attr(data-placeholder); color: #aaa; pointer-events: none; }
+    .wysiwyg-editor strong { font-weight: 700; }
+    .wysiwyg-editor em     { font-style: italic; }
+    .wysiwyg-editor u      { text-decoration: underline; }
+    .wysiwyg-editor s      { text-decoration: line-through; }
+    .wysiwyg-editor sup    { vertical-align: super; font-size: .75em; }
+    .wysiwyg-editor sub    { vertical-align: sub;   font-size: .75em; }
+    .wysiwyg-editor code   { background: rgba(0,0,0,.07); border-radius: 4px; padding: 1px 5px; font-family: monospace; font-size: .9em; }
+    .wysiwyg-editor ul, .wysiwyg-editor ol { margin-left: 22px; }
+    .wysiwyg-editor blockquote { border-left: 3px solid var(--accent); padding-left: 12px; color: #555; }
+    .wysiwyg-editor img { max-width: 100%; border-radius: 6px; }
+    .wysiwyg-editor table { border-collapse: collapse; }
+    .wysiwyg-editor td, .wysiwyg-editor th { border: 1px solid #ccc; padding: 4px 8px; }
+    .wysiwyg-editor latex {
+      display: inline; background: #ede9fe; color: #5b21b6;
+      border: 1px solid #c4b5fd; border-radius: 4px;
+      padding: 1px 5px; font-family: monospace; font-size: .88em;
+      white-space: pre-wrap; cursor: default;
+    }
+    .wysiwyg-editor latex[display] {
+      display: block; background: #f5f3ff; color: #4c1d95;
+      border: 1px solid #c4b5fd; border-radius: 6px;
+      padding: 6px 12px; margin: 4px 0; font-size: .9em; text-align: center;
+    }
+    .wysiwyg-toolbar.in-latex .tb-btn,
+    .wysiwyg-toolbar.in-latex .tb-color-apply,
+    .wysiwyg-toolbar.in-latex .tb-color-drop { opacity: .3; pointer-events: none; cursor: not-allowed; }
+    .wysiwyg-toolbar.in-latex::after {
+      content: 'Formatting disabled inside LaTeX'; font-size: .7rem;
+      color: #7c3aed; font-style: italic; margin-left: 6px; white-space: nowrap; align-self: center;
+    }
+    /* Raw mode */
+    .raw-editor { display: none; width: 100%; resize: vertical; min-height: 80px; background: #fff; border: none; padding: 10px 14px; color: #1a1a2e; font-family: 'Courier New', monospace; font-size: .88rem; line-height: 1.6; outline: none; }
+    .raw-editor.compact { min-height: 44px; max-height: 200px; }
+    .raw-editor::placeholder { color: #aaa; }
+    .wysiwyg-wrap.raw-mode .wysiwyg-toolbar { display: none; }
+    .wysiwyg-wrap.raw-mode .wysiwyg-editor  { display: none; }
+    .wysiwyg-wrap.raw-mode .raw-editor      { display: block; }
+    .editor-mode-toggle {
+      background: #f1f5f9; border: 1px solid #c8d4e0; border-radius: 50px;
+      padding: 3px 14px; font-size: .75rem; color: #6b7a90;
+      cursor: pointer; font-family: inherit; font-weight: 600;
+      transition: background .15s, color .15s, border-color .15s; white-space: nowrap;
+    }
+    .editor-mode-toggle:hover { background: #e2e8f0; color: #374151; border-color: #a8b4c8; }
+    .editor-mode-toggle.raw-active { background: rgba(231,111,81,.2); color: #f4a261; border-color: rgba(231,111,81,.5); }
+
+    /* ── Choices ── */
+    .choices-list { display: flex; flex-direction: column; gap: 10px; }
+    .choice-row { display: flex; align-items: flex-start; gap: 10px; }
+    .choice-radio-wrap { display: flex; flex-direction: column; align-items: center; padding-top: 36px; gap: 4px; flex-shrink: 0; }
+    .choice-radio-wrap input[type="radio"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+    .choice-label-idx { font-size: .72rem; font-weight: 700; color: var(--muted); }
+    .choice-row .wysiwyg-wrap { flex: 1; }
+    .choice-row .btn-icon { margin-top: 34px; flex-shrink: 0; }
+
+    /* ── Buttons ── */
+    .btn {
+      border: none; border-radius: 50px; font-family: inherit; font-weight: 700;
+      cursor: pointer; transition: transform .12s, box-shadow .12s, background .15s, opacity .15s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #f4a261);
+      color: #fff; padding: 12px 32px; font-size: 1rem;
+      box-shadow: 0 6px 22px rgba(231,111,81,.4);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(231,111,81,.52); }
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent2), #52b788);
+      color: #fff; padding: 12px 32px; font-size: 1rem;
+      box-shadow: 0 6px 22px rgba(42,157,143,.4);
+    }
+    .btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(42,157,143,.52); }
+    .btn-outline {
+      background: transparent; color: rgba(255,255,255,.85);
+      border: 2px solid rgba(255,255,255,.3); padding: 10px 22px; font-size: .9rem;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.6); color: #fff; }
+    /* btn-outline inside light cards */
+    .card .btn-outline {
+      color: #374151; border-color: #b0bec8;
+    }
+    .card .btn-outline:hover { background: #e2e8f0; border-color: #8a9bb0; color: #1a2535; }
+    .btn-icon {
+      background: #f1f5f9; border: 1px solid #d1d9e6; color: #6b7a90;
+      border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; font-size: 1rem;
+      transition: background .15s, color .15s; flex-shrink: 0;
+    }
+    .btn-icon:hover { background: rgba(239,68,68,.1); color: #dc2626; border-color: rgba(239,68,68,.3); }
+    .btn-icon.add  { background: rgba(231,111,81,.1); color: #c8512a; border-color: rgba(231,111,81,.25); }
+    .btn-icon.add:hover { background: rgba(231,111,81,.22); color: #a83010; }
+    .btn-icon.move { background: #f1f5f9; color: #9aabb8; border-color: #d1d9e6; }
+    .btn-icon.move:hover { background: #e2e8f0; color: #374151; }
+    .btn-icon.edit { background: rgba(42,157,143,.1); color: #1a7a6d; border-color: rgba(42,157,143,.25); }
+    .btn-icon.edit:hover { background: rgba(42,157,143,.2); color: #0d5a52; }
+
+    .action-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: flex-end; margin-top: 20px; }
+    .action-row .left { margin-right: auto; }
+    .section-sep { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* ── Preview ── */
+    .preview-box {
+      background: rgba(255,255,255,0.96); color: #1a1a2e;
+      border-radius: 12px; padding: 18px 20px; font-size: .95rem; line-height: 1.6; min-height: 60px;
+    }
+    .preview-q { font-weight: 600; margin-bottom: 12px; }
+    .preview-choice { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; border-radius: 8px; border: 2px solid #e2e8f0; margin-bottom: 6px; }
+    .preview-choice.correct { border-color: #10b981; background: rgba(16,185,129,.08); }
+    .preview-choice .choice-letter { font-weight: 700; color: var(--accent); min-width: 22px; }
+    .preview-reason { margin-top: 14px; padding: 10px 14px; background: rgba(42,157,143,.08); border-left: 4px solid var(--accent2); border-radius: 0 8px 8px 0; font-size: .88rem; color: #065f46; }
+    .preview-reason-lbl { font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent2); margin-bottom: 4px; }
+    .preview-type-tag { display: inline-block; padding: 3px 12px; border-radius: 50px; font-size: .75rem; font-weight: 700; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; margin-bottom: 12px; letter-spacing: .03em; }
+    .preview-answer { margin-top: 10px; padding: 10px 14px; background: rgba(42,157,143,.08); border-left: 4px solid var(--accent2); border-radius: 0 8px 8px 0; color: #065f46; }
+    .preview-answer-lbl { font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent2); margin-bottom: 4px; }
+    .preview-placeholder { color: var(--muted); font-style: italic; text-align: center; padding: 20px; }
+
+    /* ── Question list ── */
+    .q-list { display: flex; flex-direction: column; gap: 10px; }
+    .q-item {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 12px; padding: 14px 16px; display: flex;
+      align-items: flex-start; gap: 12px; transition: border-color .2s;
+    }
+    .q-item:hover { border-color: #c8d4e0; }
+    .q-item.editing { border-color: var(--accent); background: rgba(231,111,81,.08); }
+    .q-num {
+      background: linear-gradient(135deg, var(--accent), #f4a261);
+      color: #fff; border-radius: 50%; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700; flex-shrink: 0;
+    }
+    .q-body { flex: 1; min-width: 0; }
+    .q-text { font-size: .9rem; color: rgba(0,0,0,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .q-meta { font-size: .75rem; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+    .q-meta span { background: rgba(0,0,0,.06); border-radius: 50px; padding: 1px 8px; }
+    .q-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+    .empty-state { text-align: center; padding: 36px 20px; color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .empty-state p { font-size: .95rem; }
+
+    /* ── Import drop ── */
+    .import-drop {
+      border: 2px dashed #c8d4e0; border-radius: 12px;
+      padding: 24px; text-align: center; color: #6b7a90;
+      cursor: pointer; transition: border-color .2s, background .2s;
+    }
+    .import-drop:hover, .import-drop.dragover { border-color: var(--accent); background: rgba(231,111,81,.06); color: #374151; }
+    .import-drop .icon { font-size: 2rem; margin-bottom: 8px; }
+    #import-file-input { display: none; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px;
+      background: rgba(255,255,255,.97); border: 1px solid var(--border);
+      color: #1a2535; border-radius: 12px; padding: 12px 22px;
+      font-size: .9rem; font-weight: 600; opacity: 0;
+      transform: translateY(20px); transition: opacity .25s, transform .25s;
+      pointer-events: none; z-index: 1100; max-width: 320px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { border-color: #10b981; }
+    .toast.error   { border-color: #f87171; }
+
+    /* ── Modals ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: 16px; padding: 24px 28px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,.18); }
+    .modal-box h3 { color: #1a2535; font-size: 1.05rem; margin-bottom: 16px; }
+    .modal-textarea { width: 100%; min-height: 80px; resize: vertical; background: #f8fafc; border: 1px solid rgba(0,0,0,.15); border-radius: 8px; padding: 10px 12px; color: #1a2535; font-family: monospace; font-size: .95rem; outline: none; transition: border-color .2s; }
+    .modal-textarea:focus { border-color: var(--accent); }
+    .modal-textarea::placeholder { color: rgba(0,0,0,.3); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+    .preview-label { font-size: .78rem; font-weight: 600; color: rgba(0,0,0,.45); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .latex-mode-row { display: flex; gap: 16px; margin: 12px 0; align-items: center; }
+    .latex-mode-row label { color: rgba(0,0,0,.7); font-size: .88rem; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+    .latex-preview-box { background: rgba(255,255,255,.95); color: #1a1a2e; border-radius: 8px; padding: 12px 16px; min-height: 52px; font-size: 1rem; line-height: 1.6; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .latex-preview-box .latex-error { color: #dc2626; font-size: .82rem; font-family: monospace; }
+
+    /* Image modal */
+    .img-field { margin-bottom: 12px; }
+    .img-field label { display: block; font-size: .82rem; font-weight: 600; color: rgba(0,0,0,.55); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+    .img-preview-box { margin-top: 10px; text-align: center; }
+    .img-preview-box img { max-width: 100%; max-height: 180px; border-radius: 8px; display: none; }
+
+    /* Table modal */
+    .table-grid-picker { display: inline-grid; gap: 3px; padding: 4px; background: rgba(255,255,255,.05); border-radius: 8px; margin-bottom: 12px; }
+    .table-grid-picker .tg-cell { width: 22px; height: 22px; border-radius: 4px; background: rgba(0,0,0,.08); border: 1px solid rgba(0,0,0,.15); cursor: pointer; transition: background .1s, border-color .1s; }
+    .table-grid-picker .tg-cell.hover { background: rgba(231,111,81,.5); border-color: #f4a261; }
+    .table-size-label { font-size: .82rem; color: rgba(0,0,0,.5); margin-bottom: 10px; min-height: 1.1em; }
+    .table-options-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 4px; }
+    .table-options-row label { color: rgba(0,0,0,.7); font-size: .88rem; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+
+    /* Table float toolbar */
+    #tbl-float-bar {
+      position: fixed; z-index: 800; display: none;
+      background: #f1f5f9; border: 1px solid #cbd5e1;
+      border-radius: 8px; padding: 3px 6px; gap: 2px;
+      align-items: center; flex-wrap: wrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    }
+    #tbl-float-bar.visible { display: flex; }
+    #tbl-float-bar .tb-btn  { height: 24px; min-width: 28px; font-size: .72rem; padding: 0 5px; color: #374151; background: transparent; border-color: transparent; }
+    #tbl-float-bar .tb-btn:hover { background: #e2e8f0; color: #111; border-color: #c7d0db; }
+    #tbl-float-bar .tb-btn.danger:hover { background: rgba(239,68,68,.15); color: #dc2626; border-color: rgba(239,68,68,.35); }
+    #tbl-float-bar .tb-sep  { width: 1px; height: 18px; background: #cbd5e1; margin: 0 2px; flex-shrink: 0; }
+    #tbl-float-bar .bar-lbl { font-size: .68rem; color: #94a3b8; padding: 0 3px; user-select: none; white-space: nowrap; }
+
+    /* JSON overlay */
+    .json-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 900; overflow-y: auto; padding: 24px; }
+    .json-overlay.open { display: block; }
+
+    /* Validation animations */
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+    .field-error { animation: shake .35s ease; border-color: #f87171 !important; box-shadow: 0 0 0 3px rgba(248,113,113,.3) !important; }
+    @keyframes warnPulse { 0%,100%{border-color:#f87171;background:rgba(248,113,113,.18)} 50%{border-color:#fbbf24;background:rgba(251,191,36,.18)} }
+    .field-warn { animation: warnPulse .4s ease 3; border-color: #f87171 !important; }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,.06); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.22); border-radius: 4px; }
+    .katex-display { margin: 4px 0; }
+
+    /* ── Inline list editor ── */
+    .q-item-exp { flex-direction: column; padding: 0 !important; }
+    .ie-hdr { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .ie-hdr-text { flex: 1; color: rgba(0,0,0,.45); font-size: .85rem; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ie-body { padding: 16px; border-top: 1px solid var(--border); }
+    .ie-sect { margin-bottom: 16px; }
+    .ie-lbl { font-size: .82rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .ie-hint { font-size: .75rem; font-weight: 400; color: rgba(0,0,0,.35); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+    .ie-meta-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .ie-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+    /* ── Context Sub-Question Panels ── */
+    .ctx-sq-panel {
+      border: 1px solid rgba(0,0,0,0.1); border-radius: 10px;
+      padding: 16px 18px; margin-bottom: 14px;
+      background: rgba(0,0,0,0.02);
+    }
+    .ctx-sq-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .ctx-sq-title { font-size:.85rem; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:.5px; }
+    .ctx-sq-lbl { font-size:.82rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+
+    @media (max-width: 640px) {
+      .form-grid, .form-grid.three { grid-template-columns: 1fr; }
+      .form-full { grid-column: 1; }
+      .action-row { justify-content: stretch; }
+      .action-row .btn { flex: 1; text-align: center; }
+      .action-row .left { flex: unset; }
+      .ie-meta-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>&#x270F;&#xFE0F; Question Creator</h1>
+    <p>Build your question set visually and download as JSON</p>
+  </div>
+
+  <div class="top-bar">
+    <div class="q-count-pill">&#x1F4CB; <span id="q-count">0</span> question(s)</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="App.triggerImport()">&#x1F4C2; Import JSON</button>
+      <button class="btn btn-success" id="btn-download" onclick="App.downloadJSON()" disabled>&#x2B07;&#xFE0F; Download JSON</button>
+    </div>
+  </div>
+
+  <!-- IMPORT -->
+  <div class="card">
+    <div class="card-title">&#x1F4C2; Import Existing JSON <span class="badge-green">Optional</span></div>
+    <div class="import-drop" id="import-drop" onclick="App.triggerImport()"
+         ondragover="App.dragOver(event)" ondragleave="App.dragLeave(event)" ondrop="App.dropFile(event)">
+      <div class="icon">&#x1F4C4;</div>
+      <p>Click or drag &amp; drop a <strong>.json</strong> question file to load and continue editing</p>
+    </div>
+    <input type="file" id="import-file-input" accept=".json" onchange="App.handleImport(event)" />
+  </div>
+
+  <!-- EDITOR -->
+  <div class="card" id="editor-card">
+    <div class="card-title">
+      &#x2795; Add Question
+      <button class="editor-mode-toggle" id="editor-mode-btn" onclick="App.toggleEditorMode()" style="margin-left:auto">&#x1F4DD; Raw HTML</button>
+    </div>
+
+    <div class="field">
+      <label>Type <span class="req">*</span></label>
+      <select id="f-type" onchange="App.onTypeChange()">
+        <option value="Multi Choice" selected>Multi Choice</option>
+        <option value="Fill in the blanks">Fill in the blanks</option>
+        <option value="Match the following">Match the following</option>
+        <option value="Arrange in logical sequence">Arrange in logical sequence</option>
+        <option value="True or False">True or False</option>
+        <option value="1 marks">1 marks</option>
+        <option value="2 marks">2 marks</option>
+        <option value="3 marks">3 marks</option>
+        <option value="4 marks">4 marks</option>
+        <option value="5 marks">5 marks</option>
+        <option value="Context Based">Context Based</option>
+      </select>
+    </div>
+
+    <hr class="section-sep" />
+
+    <div id="section-context" style="display:none;margin-top:20px">
+      <div class="field">
+        <label>Context <span class="req">*</span></label>
+        <div id="context-editor-mount"></div>
+      </div>
+      <div id="ctx-sub-questions-list" style="margin-top:18px"></div>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+        <button class="btn btn-outline" id="ctx-add-q-btn" onclick="App.addCtxSubQ()" style="padding:8px 18px;font-size:.85rem">&#xFF0B; Add Question</button>
+        <span id="ctx-add-q-label" style="font-size:.78rem;color:var(--muted)">Add another question under this context (max 10)</span>
+      </div>
+    </div>
+
+    <div class="field" id="section-question">
+      <label>Question <span class="req">*</span></label>
+      <div id="q-editor-mount"></div>
+    </div>
+
+    <div id="section-choices" style="display:none;margin-top:20px">
+      <div class="field">
+        <label>
+          Answer Choices <span class="req">*</span>
+          <span class="hint">Select the radio button next to the correct answer &nbsp;|&nbsp; 2&ndash;6 choices</span>
+        </label>
+        <div class="choices-list" id="choices-list"></div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <button class="btn-icon add" title="Add choice" onclick="App.addChoice()">&#xFF0B;</button>
+          <span style="font-size:.78rem;color:var(--muted)">Add choice (max 6)</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-seq-items" style="display:none;margin-top:20px">
+      <div class="field">
+        <label>
+          Items to Arrange <span class="req">*</span>
+          <span class="hint">Enter each item &mdash; user will arrange them in the correct order</span>
+        </label>
+        <div class="choices-list" id="seq-items-list"></div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <button class="btn-icon add" title="Add item" id="seq-add-btn" onclick="App.addSeqItem()">&#xFF0B;</button>
+          <span style="font-size:.78rem;color:var(--muted)">Add item (max 8)</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-answer" style="display:none;margin-top:20px">
+      <div class="field">
+        <label>Answer <span class="req">*</span></label>
+        <div id="answer-editor-mount"></div>
+      </div>
+    </div>
+
+    <div id="section-tf-answer" style="display:none;margin-top:20px">
+      <div class="field">
+        <label>Correct Answer <span class="req">*</span></label>
+        <div style="display:flex;gap:16px;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.95rem">
+            <input type="radio" name="tf-answer" value="True" id="tf-true" checked /> True
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.95rem">
+            <input type="radio" name="tf-answer" value="False" id="tf-false" /> False
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-sep" />
+
+    <div class="field" id="section-reason">
+      <label>Reason / Explanation <span class="hint">optional</span></label>
+      <div id="reason-editor-mount"></div>
+    </div>
+
+    <hr class="section-sep" />
+
+    <div class="field">
+      <label>Live Preview</label>
+      <div id="preview-box" class="preview-box">
+        <div class="preview-placeholder">Start typing a question to see a live preview&#x2026;</div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-outline" onclick="App.clearForm()">&#x1F5D1; Clear form</button>
+      <button class="btn btn-primary" onclick="App.saveQuestion()">&#x2714; Save Question</button>
+    </div>
+  </div>
+
+  <!-- QUESTION LIST -->
+  <div class="card">
+    <div class="card-title">&#x1F4D6; Questions in this Set</div>
+    <div id="q-list" class="q-list">
+      <div class="empty-state">
+        <div class="icon">&#x1F5C2;&#xFE0F;</div>
+        <p>No questions yet &mdash; fill in the form above and click <strong>Save Question</strong>.</p>
+      </div>
+    </div>
+    <div class="action-row" style="margin-top:24px">
+      <button class="btn btn-outline" onclick="App.previewJSON()">&#x1F441; Preview JSON</button>
+      <button class="btn btn-success" id="btn-download2" onclick="App.downloadJSON()" disabled>&#x2B07;&#xFE0F; Download JSON</button>
+    </div>
+  </div>
+
+</div><!-- .page -->
+
+<!-- LATEX MODAL -->
+<div class="modal-overlay" id="latex-overlay" onclick="App.latexOverlayClick(event)">
+  <div class="modal-box" style="max-width:520px">
+    <h3>&#x2211; Insert LaTeX Math</h3>
+    <textarea class="modal-textarea" id="latex-input" placeholder="e.g.  x^2 + \frac{a}{b} = 0" oninput="App.latexPreview()"></textarea>
+    <div class="latex-mode-row">
+      <label><input type="radio" name="latex-mode" value="inline" checked onchange="App.latexPreview()" /> Inline</label>
+      <label><input type="radio" name="latex-mode" value="display" onchange="App.latexPreview()" /> Display (block)</label>
+    </div>
+    <div class="preview-label">Preview</div>
+    <div class="latex-preview-box" id="latex-preview-box">&#x2014;</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="App.closeLatexModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="App.insertLatex()">Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="modal-overlay" id="img-overlay" onclick="App.imgOverlayClick(event)">
+  <div class="modal-box" style="max-width:480px">
+    <h3>&#x1F5BC; Insert Image</h3>
+    <div class="img-field">
+      <label>Image URL or relative path</label>
+      <input type="text" id="img-url" placeholder="https://… or questions/images/fig1.png" oninput="App.imgPreviewUpdate()" />
+    </div>
+    <div class="img-field">
+      <label>Alt text <span style="font-weight:400;color:rgba(255,255,255,.4);font-size:.78rem">(optional)</span></label>
+      <input type="text" id="img-alt" placeholder="Descriptive text" />
+    </div>
+    <div class="img-field">
+      <label>Width <span style="font-weight:400;color:rgba(255,255,255,.4);font-size:.78rem">(optional, e.g. 300px or 50%)</span></label>
+      <input type="text" id="img-width" placeholder="e.g. 300px" />
+    </div>
+    <div class="img-preview-box"><img id="img-preview-el" src="" alt="" /></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="App.closeImgModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="App.insertImage()">Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE MODAL -->
+<div class="modal-overlay" id="table-overlay" onclick="App.tableOverlayClick(event)">
+  <div class="modal-box" style="max-width:420px">
+    <h3>&#x229E; Insert Table</h3>
+    <div class="table-size-label" id="table-size-label">Hover to select size</div>
+    <div class="table-grid-picker" id="table-grid-picker"></div>
+    <div class="table-options-row">
+      <label><input type="checkbox" id="table-header-row" checked /> Header row</label>
+      <label><input type="checkbox" id="table-borders" checked /> Borders</label>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-outline" onclick="App.closeTableModal()">Cancel</button>
+      <button class="btn btn-primary" id="table-insert-btn" onclick="App.insertTable()" disabled>Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE FLOAT TOOLBAR -->
+<div id="tbl-float-bar" onmousedown="event.preventDefault()">
+  <span class="bar-lbl">Row</span>
+  <button class="tb-btn" title="Add row above" onclick="App.tblAddRowAbove()">&#x2191;&#xFF0B;</button>
+  <button class="tb-btn" title="Add row below" onclick="App.tblAddRowBelow()">&#x2193;&#xFF0B;</button>
+  <button class="tb-btn danger" title="Remove current row" onclick="App.tblRemoveRow()">&#x25AD;&#x2715;</button>
+  <span class="tb-sep"></span>
+  <span class="bar-lbl">Col</span>
+  <button class="tb-btn" title="Add column left" onclick="App.tblAddColLeft()">&#xFF0B;&#x2190;</button>
+  <button class="tb-btn" title="Add column right" onclick="App.tblAddColRight()">&#xFF0B;&#x2192;</button>
+  <button class="tb-btn danger" title="Remove current column" onclick="App.tblRemoveCol()">&#x25AF;&#x2715;</button>
+  <span class="tb-sep"></span>
+  <button class="tb-btn" title="Insert line before table" onclick="App.tblInsertLineBefore()">&#x2191;&#xB6;</button>
+  <button class="tb-btn" title="Insert line after table" onclick="App.tblInsertLineAfter()">&#x2193;&#xB6;</button>
+  <span class="tb-sep"></span>
+  <button class="tb-btn danger" title="Delete entire table" onclick="App.tblDeleteTable()">&#x1F5D1;&#xFE0F;</button>
+</div>
+
+<!-- JSON PREVIEW MODAL -->
+<div class="json-overlay" id="json-overlay" onclick="App.jsonOverlayClick(event)">
+  <div style="max-width:760px;margin:40px auto;background:#0f172a;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:28px" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-weight:700;font-size:1.05rem;color:#fff">&#x1F4CB; JSON Preview</span>
+      <button class="btn btn-outline" onclick="App.closeJsonModal()" style="padding:6px 16px;font-size:.85rem">&#x2715; Close</button>
+    </div>
+    <pre id="json-preview-content" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;overflow:auto;max-height:60vh;font-size:.82rem;color:#a5f3fc;line-height:1.5;white-space:pre-wrap;word-break:break-word"></pre>
+    <div class="action-row" style="margin-top:16px">
+      <button class="btn btn-success" onclick="App.downloadJSON()">&#x2B07;&#xFE0F; Download JSON</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+'use strict';
+
+// ── STATE ────────────────────────────────────────────────────────────
+let questions  = [];
+let editingIdx = null;
+let choiceCount = 4;
+let seqItemCount = 3;
+const SEQ_MAX = 8;
+let activeEditor = null;
+let savedRange   = null;
+let editorMode   = 'wysiwyg';
+let questionWrap = null;
+let answerWrap   = null;
+let reasonWrap   = null;
+let contextWrap  = null;
+let insertionRange = null;
+let ieEditors = null;
+
+// ── CTX-SQ STATE (scope=-1 → main form; scope=groupIdx → inline editor) ──
+const ctxSqStores = {};           // keyed by String(scope)
+const CTX_SQ_MAX  = 10;
+function _csStore(scope) { const k=String(scope); if(!ctxSqStores[k]) ctxSqStores[k]=[]; return ctxSqStores[k]; }
+function _csSet(scope,arr){ ctxSqStores[String(scope)]=arr; }
+function _csPfx(scope) { return scope<0 ? '' : `ie${scope}-`; }
+function _csListId(scope){ return scope<0 ? 'ctx-sub-questions-list' : `ie-ctx-sq-list-${scope}`; }
+function _csAddBtnId(scope){ return scope<0 ? 'ctx-add-q-btn' : `ie-ctx-add-q-btn-${scope}`; }
+
+// Build all sub-question panels from scratch (vals = array of innerQ data objects)
+function buildCtxSubQList(scope, vals) {
+  _csSet(scope, []);
+  const list = document.getElementById(_csListId(scope));
+  if (!list) return;
+  list.innerHTML = '';
+  const count = (vals && vals.length >= 1) ? vals.length : 1;
+  for (let i = 0; i < count; i++) _appendCtxSubQPanel(scope, i, vals ? vals[i] : null);
+  _csUpdateUI(scope);
+}
+
+function _csUpdateUI(scope) {
+  const store = _csStore(scope);
+  const addBtn = document.getElementById(_csAddBtnId(scope));
+  if (addBtn) addBtn.disabled = store.length >= CTX_SQ_MAX;
+  store.forEach((_, i) => {
+    const del = document.getElementById(`${_csPfx(scope)}ctx-sq-del-${i}`);
+    if (del) del.style.display = store.length > 1 ? '' : 'none';
+  });
+}
+
+function _appendCtxSubQPanel(scope, n, data) {
+  data = data || {};
+  const pfx  = _csPfx(scope);
+  const store = _csStore(scope);
+  store[n] = { qWrap: null, answerWrap: null, reasonWrap: null, choiceWraps: [], choiceCount: 4, seqItemWraps: [], seqItemCount: 3 };
+  const sub  = data.type || '';
+  const isMC = sub === 'Multi Choice';
+  const isSeq= sub === 'Arrange in logical sequence';
+  const TYPES = ['Multi Choice','Fill in the blanks','Match the following','Arrange in logical sequence','1 marks','2 marks','3 marks','4 marks','5 marks'];
+  const typeOpts = TYPES.map(t => `<option value="${escHtml(t)}" ${sub===t?'selected':''}>${escHtml(t)}</option>`).join('');
+  const panel = document.createElement('div');
+  panel.className = 'ctx-sq-panel'; panel.id = `${pfx}ctx-sq-panel-${n}`;
+  panel.innerHTML = `
+    <div class="ctx-sq-hdr">
+      <span class="ctx-sq-title">Question ${n+1}</span>
+      <button class="btn-icon" id="${pfx}ctx-sq-del-${n}" title="Remove question" onclick="App.removeCtxSubQ(${scope},${n})">&#x2715;</button>
+    </div>
+    <div class="field">
+      <label class="ctx-sq-lbl">Question Type <span class="req">*</span></label>
+      <select id="${pfx}ctx-sq-type-${n}" onchange="App.ctxSubQTypeChange(${scope},${n})">
+        <option value="">&mdash; Select question type &mdash;</option>${typeOpts}
+      </select>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label class="ctx-sq-lbl">Question <span class="req">*</span></label>
+      <div id="${pfx}ctx-sq-q-mount-${n}"></div>
+    </div>
+    <div id="${pfx}ctx-sq-choices-section-${n}" style="${isMC?'':'display:none'};margin-top:14px">
+      <div class="field">
+        <label class="ctx-sq-lbl">Answer Choices <span class="req">*</span><span class="hint">&nbsp;Radio = correct &nbsp;|&nbsp; 2&ndash;6</span></label>
+        <div class="choices-list" id="${pfx}ctx-sq-choices-list-${n}"></div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <button class="btn-icon add" id="${pfx}ctx-sq-add-choice-btn-${n}" onclick="App.ctxSubQAddChoice(${scope},${n})">&#xFF0B;</button>
+          <span style="font-size:.78rem;color:var(--muted)">Add choice (max 6)</span>
+        </div>
+      </div>
+    </div>
+    <div id="${pfx}ctx-sq-seq-section-${n}" style="${isSeq?'':'display:none'};margin-top:14px">
+      <div class="field">
+        <label class="ctx-sq-lbl">Items to Arrange <span class="req">*</span></label>
+        <div class="choices-list" id="${pfx}ctx-sq-seq-list-${n}"></div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <button class="btn-icon add" id="${pfx}ctx-sq-add-seq-btn-${n}" onclick="App.ctxSubQAddSeqItem(${scope},${n})">&#xFF0B;</button>
+          <span style="font-size:.78rem;color:var(--muted)">Add item (max 8)</span>
+        </div>
+      </div>
+    </div>
+    <div id="${pfx}ctx-sq-answer-section-${n}" style="${(sub&&!isMC)?'':'display:none'};margin-top:14px">
+      <div class="field">
+        <label class="ctx-sq-lbl" id="${pfx}ctx-sq-answer-lbl-${n}">${isSeq?'Correct Sequence':'Answer'} <span class="req">*</span></label>
+        <div id="${pfx}ctx-sq-answer-mount-${n}"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label class="ctx-sq-lbl">Reason / Explanation <span class="hint">&nbsp;optional</span></label>
+      <div id="${pfx}ctx-sq-reason-mount-${n}"></div>
+    </div>`;
+  document.getElementById(_csListId(scope)).appendChild(panel);
+  const sq = store[n];
+  sq.qWrap = createEditor(document.getElementById(`${pfx}ctx-sq-q-mount-${n}`), { placeholder: 'Question text\u2026', onChange: refreshPreview });
+  setEditorContent(sq.qWrap, data.question || '');
+  sq.answerWrap = createEditor(document.getElementById(`${pfx}ctx-sq-answer-mount-${n}`), { placeholder: isSeq ? 'e.g. Step 1 \u2192 Step 2\u2026' : 'Type the answer here\u2026', compact: true, onChange: refreshPreview });
+  setEditorContent(sq.answerWrap, (!isMC && typeof data.answer === 'string') ? data.answer : '');
+  sq.reasonWrap = createEditor(document.getElementById(`${pfx}ctx-sq-reason-mount-${n}`), { placeholder: 'Explanation (optional)\u2026', onChange: refreshPreview });
+  setEditorContent(sq.reasonWrap, data.reason || '');
+  if (editorMode === 'raw') [sq.qWrap, sq.answerWrap, sq.reasonWrap].forEach(w => { if (w) w.classList.add('raw-mode'); });
+  if (isMC) {
+    _buildCtxSqChoiceRows(scope, n, Math.max(2,Math.min(6,(data.choices||[]).length||4)), data.choices||[], typeof data.answer==='number'?data.answer:0);
+    _buildCtxSqSeqRows(scope, n, 3, []);
+  } else if (isSeq) {
+    _buildCtxSqChoiceRows(scope, n, 4, [], 0);
+    _buildCtxSqSeqRows(scope, n, Math.max(2,Math.min(SEQ_MAX,(data.choices||[]).length||3)), data.choices||[]);
+  } else {
+    _buildCtxSqChoiceRows(scope, n, 4, [], 0);
+    _buildCtxSqSeqRows(scope, n, 3, []);
+  }
+}
+
+function _buildCtxSqChoiceRows(scope, n, count, vals, correct) {
+  count = Math.max(2, Math.min(6, count));
+  const sq  = _csStore(scope)[n]; if (!sq) return;
+  sq.choiceCount = count;
+  const pfx = _csPfx(scope);
+  const list = document.getElementById(`${pfx}ctx-sq-choices-list-${n}`);
+  if (!list) return;
+  list.innerHTML = ''; sq.choiceWraps = [];
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div'); row.className = 'choice-row'; row.dataset.idx = i;
+    const rw = document.createElement('div'); rw.className = 'choice-radio-wrap';
+    const radio = document.createElement('input'); radio.type='radio'; radio.name=`${pfx}ctx-sq-correct-${n}`; radio.value=i; radio.checked=(i===correct);
+    radio.addEventListener('change', refreshPreview);
+    const lbl = document.createElement('span'); lbl.className='choice-label-idx'; lbl.textContent=LETTERS[i];
+    rw.append(radio, lbl);
+    const w = createEditor(null, { placeholder: `Choice ${LETTERS[i]}\u2026`, small: true, onChange: refreshPreview });
+    setEditorContent(w, (vals && vals[i]) || '');
+    if (editorMode === 'raw') w.classList.add('raw-mode');
+    const del = document.createElement('button'); del.className='btn-icon'; del.title='Remove'; del.innerHTML='&#x2715;'; del.disabled=(count<=2);
+    del.addEventListener('click', () => App.ctxSubQRemoveChoice(scope, n, i));
+    row.append(rw, w, del); list.appendChild(row); sq.choiceWraps.push(w);
+  }
+  const addBtn = document.getElementById(`${pfx}ctx-sq-add-choice-btn-${n}`);
+  if (addBtn) addBtn.disabled = count >= 6;
+}
+
+function _buildCtxSqSeqRows(scope, n, count, vals) {
+  count = Math.max(2, Math.min(SEQ_MAX, count));
+  const sq  = _csStore(scope)[n]; if (!sq) return;
+  sq.seqItemCount = count;
+  const pfx = _csPfx(scope);
+  const list = document.getElementById(`${pfx}ctx-sq-seq-list-${n}`);
+  if (!list) return;
+  list.innerHTML = ''; sq.seqItemWraps = [];
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div'); row.className = 'choice-row'; row.dataset.idx = i;
+    const nw  = document.createElement('div'); nw.className = 'choice-radio-wrap';
+    nw.innerHTML = `<span class="choice-label-idx" style="font-size:.95rem;font-weight:700;padding-top:36px;display:block;text-align:center">${i+1}</span>`;
+    const w = createEditor(null, { placeholder: `Item ${i+1}\u2026`, small: true, onChange: refreshPreview });
+    setEditorContent(w, (vals && vals[i]) || '');
+    if (editorMode === 'raw') w.classList.add('raw-mode');
+    const del = document.createElement('button'); del.className='btn-icon'; del.title='Remove'; del.innerHTML='&#x2715;'; del.disabled=(count<=2);
+    del.addEventListener('click', () => App.ctxSubQRemoveSeqItem(scope, n, i));
+    row.append(nw, w, del); list.appendChild(row); sq.seqItemWraps.push(w);
+  }
+  const addBtn = document.getElementById(`${pfx}ctx-sq-add-seq-btn-${n}`);
+  if (addBtn) addBtn.disabled = count >= SEQ_MAX;
+}
+
+function _csGetChoices(scope, n)  { const sq=_csStore(scope)[n]; return sq ? sq.choiceWraps.map(w=>getEditorContent(w)) : []; }
+function _csGetCorrect(scope, n)  { const r=document.querySelector(`#${_csPfx(scope)}ctx-sq-choices-list-${n} input[type="radio"]:checked`); return r ? parseInt(r.value,10) : 0; }
+function _csGetSeqItems(scope, n) { const sq=_csStore(scope)[n]; return sq ? sq.seqItemWraps.map(w=>getEditorContent(w)) : []; }
+
+// Public-facing event handlers used from onclick attributes
+function ctxSubQTypeChange(scope, n) {
+  const pfx = _csPfx(scope);
+  const sub = document.getElementById(`${pfx}ctx-sq-type-${n}`)?.value || '';
+  const isMC = sub === 'Multi Choice', isSeq = sub === 'Arrange in logical sequence';
+  const choicesSect = document.getElementById(`${pfx}ctx-sq-choices-section-${n}`);
+  const seqSect     = document.getElementById(`${pfx}ctx-sq-seq-section-${n}`);
+  const answerSect  = document.getElementById(`${pfx}ctx-sq-answer-section-${n}`);
+  const answerLbl   = document.getElementById(`${pfx}ctx-sq-answer-lbl-${n}`);
+  if (choicesSect) choicesSect.style.display = isMC  ? '' : 'none';
+  if (seqSect)     seqSect.style.display     = isSeq ? '' : 'none';
+  if (answerSect)  answerSect.style.display  = (sub && !isMC) ? '' : 'none';
+  if (answerLbl) answerLbl.innerHTML = `${isSeq?'Correct Sequence':'Answer'} <span class="req">*</span>`;
+  refreshPreview();
+}
+
+function addCtxSubQ(scope) {
+  scope = scope === undefined ? -1 : scope;
+  const store = _csStore(scope);
+  if (store.length >= CTX_SQ_MAX) return;
+  _appendCtxSubQPanel(scope, store.length, null);
+  _csUpdateUI(scope);
+  refreshPreview();
+}
+
+function removeCtxSubQ(scope, n) {
+  const store = _csStore(scope);
+  if (store.length <= 1) return;
+  const allData = store.map((_, i) => _csGetRawData(scope, i));
+  allData.splice(n, 1);
+  buildCtxSubQList(scope, allData);
+  refreshPreview();
+}
+
+function ctxSubQAddChoice(scope, n) {
+  const sq = _csStore(scope)[n]; if (!sq || sq.choiceCount >= 6) return;
+  _buildCtxSqChoiceRows(scope, n, sq.choiceCount+1, _csGetChoices(scope,n), _csGetCorrect(scope,n));
+}
+function ctxSubQRemoveChoice(scope, n, ci) {
+  const sq = _csStore(scope)[n]; if (!sq || sq.choiceCount <= 2) return;
+  const vals = _csGetChoices(scope,n), corr = _csGetCorrect(scope,n);
+  vals.splice(ci,1);
+  _buildCtxSqChoiceRows(scope, n, sq.choiceCount-1, vals, corr>ci?corr-1:(corr===ci?0:corr));
+}
+function ctxSubQAddSeqItem(scope, n) {
+  const sq = _csStore(scope)[n]; if (!sq || sq.seqItemCount >= SEQ_MAX) return;
+  _buildCtxSqSeqRows(scope, n, sq.seqItemCount+1, _csGetSeqItems(scope,n));
+}
+function ctxSubQRemoveSeqItem(scope, n, si) {
+  const sq = _csStore(scope)[n]; if (!sq || sq.seqItemCount <= 2) return;
+  const vals = _csGetSeqItems(scope,n); vals.splice(si,1);
+  _buildCtxSqSeqRows(scope, n, sq.seqItemCount-1, vals);
+}
+
+function _csGetRawData(scope, n) {
+  const sq = _csStore(scope)[n]; if (!sq) return {};
+  const pfx = _csPfx(scope);
+  const sub = document.getElementById(`${pfx}ctx-sq-type-${n}`)?.value || '';
+  const isMC = sub === 'Multi Choice', isSeq = sub === 'Arrange in logical sequence';
+  return {
+    type: sub,
+    question: sq.qWrap ? getEditorContent(sq.qWrap) : '',
+    answer: isMC ? _csGetCorrect(scope,n) : (sq.answerWrap ? getEditorContent(sq.answerWrap) : ''),
+    choices: isMC ? _csGetChoices(scope,n) : (isSeq ? _csGetSeqItems(scope,n) : []),
+    reason: sq.reasonWrap ? getEditorContent(sq.reasonWrap) : ''
+  };
+}
+
+// Build a validated innerQ object; returns null and shows toast on error
+function _csBuildInnerQ(scope, n, flagError) {
+  const pfx = _csPfx(scope), sq = _csStore(scope)[n];
+  const sub = document.getElementById(`${pfx}ctx-sq-type-${n}`)?.value || '';
+  if (!sub) { toast(`Question ${n+1}: select a question type.`, 'error'); flagError(document.getElementById(`${pfx}ctx-sq-type-${n}`)); return null; }
+  const qt = sq.qWrap ? getEditorContent(sq.qWrap) : '';
+  if (!qt)  { toast(`Question ${n+1}: question text is required.`, 'error'); flagError(sq.qWrap); return null; }
+  const innerQ = { question: qt, type: sub };
+  if (sub === 'Multi Choice') {
+    const ch = _csGetChoices(scope, n);
+    if (ch.filter(c=>c).length < 2) { toast(`Question ${n+1}: at least 2 choices required.`, 'error'); flagError(sq.choiceWraps[0]); return null; }
+    let ci = _csGetCorrect(scope,n), corrMap=0, corrMapped=false; const final=[];
+    ch.forEach((c,i)=>{ if(c){ if(i===ci&&!corrMapped){corrMap=final.length;corrMapped=true;} final.push(c); } });
+    if (!corrMapped) corrMap=0;
+    innerQ.choices = final; innerQ.answer = corrMap;
+  } else if (sub === 'Arrange in logical sequence') {
+    const items = _csGetSeqItems(scope,n).filter(c=>c);
+    if (items.length < 2) { toast(`Question ${n+1}: at least 2 items required.`, 'error'); return null; }
+    const ans = sq.answerWrap ? getEditorContent(sq.answerWrap) : '';
+    if (!ans) { toast(`Question ${n+1}: correct sequence required.`, 'error'); flagError(sq.answerWrap); return null; }
+    innerQ.choices = items; innerQ.answer = ans;
+  } else {
+    const ans = sq.answerWrap ? getEditorContent(sq.answerWrap) : '';
+    if (!ans) { toast(`Question ${n+1}: answer is required.`, 'error'); flagError(sq.answerWrap); return null; }
+    innerQ.answer = ans;
+  }
+  const reason = sq.reasonWrap ? getEditorContent(sq.reasonWrap) : '';
+  if (reason) innerQ.reason = reason;
+  return innerQ;
+}
+
+const LETTERS = ['A','B','C','D','E','F'];
+
+// ── WYSIWYG FACTORY ──────────────────────────────────────────────────
+function createEditor(mountEl, opts) {
+  opts = opts || {};
+  const wrap = document.createElement('div');
+  wrap.className = 'wysiwyg-wrap';
+
+  const tb = document.createElement('div');
+  tb.className = 'wysiwyg-toolbar';
+  tb.addEventListener('mousedown', e => e.preventDefault());
+
+  function btn(label, title, fn, cls) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tb-btn' + (cls ? ' ' + cls : '');
+    b.title = title;
+    b.innerHTML = label;
+    b.addEventListener('click', () => {
+      if (!cls || !cls.includes('latex-btn')) {
+        restoreSel();
+        if (inLatexNow()) { toast('Formatting disabled inside a LaTeX block.', 'error'); return; }
+      } else {
+        restoreSel();
+      }
+      fn();
+    });
+    return b;
+  }
+  function sep() { const s = document.createElement('span'); s.className = 'tb-sep'; return s; }
+
+  tb.append(
+    btn('<b>B</b>',           'Bold',          () => fmt('bold')),
+    btn('<i>I</i>',           'Italic',        () => fmt('italic')),
+    btn('<u>U</u>',           'Underline',     () => fmt('underline')),
+    btn('<s>S</s>',           'Strikethrough', () => fmt('strikeThrough')),
+    sep(),
+    btn('X<sup>2</sup>', 'Superscript', () => fmt('superscript')),
+    btn('X<sub>2</sub>', 'Subscript',   () => fmt('subscript')),
+    sep(),
+    btn('&lt;/&gt;', 'Inline code', () => wrapSel('<code>', '</code>'))
+  );
+
+  function makeColorBtn(icon, execCmd, titleText, defaultColor) {
+    let currentColor = defaultColor;
+    let colorRange = null;
+    const cw = document.createElement('span');
+    cw.className = 'tb-color-wrap';
+    const inp = document.createElement('input');
+    inp.type = 'color'; inp.value = defaultColor;
+    inp.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
+    const swatch = document.createElement('span');
+    swatch.className = 'tb-color-swatch';
+    swatch.style.background = defaultColor;
+    const applyBtn = document.createElement('button');
+    applyBtn.type = 'button'; applyBtn.className = 'tb-color-apply';
+    applyBtn.title = titleText + ' (apply)'; applyBtn.innerHTML = icon + '<br>';
+    applyBtn.appendChild(swatch);
+    applyBtn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const sel = window.getSelection();
+      colorRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : (savedRange ? savedRange.cloneRange() : null);
+    });
+    applyBtn.addEventListener('click', () => {
+      if (inLatexNow()) { toast('Formatting disabled inside a LaTeX block.', 'error'); return; }
+      if (colorRange && activeEditor) {
+        activeEditor.focus();
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(colorRange);
+      }
+      document.execCommand(execCmd, false, currentColor);
+      if (activeEditor) activeEditor.dispatchEvent(new Event('input'));
+    });
+    const dropBtn = document.createElement('button');
+    dropBtn.type = 'button'; dropBtn.className = 'tb-color-drop';
+    dropBtn.title = titleText + ' (change color)'; dropBtn.innerHTML = '&#x25BE;';
+    dropBtn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const sel = window.getSelection();
+      colorRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : (savedRange ? savedRange.cloneRange() : null);
+    });
+    dropBtn.addEventListener('click', () => inp.click());
+    inp.addEventListener('input', () => { swatch.style.background = inp.value; });
+    inp.addEventListener('change', () => {
+      currentColor = inp.value; swatch.style.background = currentColor;
+      if (inLatexNow()) { toast('Formatting disabled inside a LaTeX block.', 'error'); return; }
+      if (colorRange && activeEditor) {
+        activeEditor.focus();
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(colorRange);
+      }
+      document.execCommand(execCmd, false, currentColor);
+      if (activeEditor) activeEditor.dispatchEvent(new Event('input'));
+    });
+    cw.append(applyBtn, dropBtn, inp);
+    return cw;
+  }
+
+  tb.append(
+    sep(),
+    makeColorBtn('A', 'foreColor', 'Text color', '#000000'),
+    makeColorBtn('<span style="font-size:.75em;background:#ff0;color:#333;padding:0 2px;border-radius:2px">ab</span>', 'hiliteColor', 'Highlight color', '#ffff00')
+  );
+
+  if (!opts.compact) {
+    tb.append(
+      sep(),
+      btn('&#x2261;', 'Bullet list',   () => fmt('insertUnorderedList')),
+      btn('1.',        'Numbered list', () => fmt('insertOrderedList')),
+      btn('<span style="border-left:2px solid currentColor;padding-left:3px;font-style:italic">&ldquo;</span>', 'Blockquote', () => wrapBlock('blockquote'))
+    );
+  }
+
+  tb.append(
+    sep(),
+    btn('&#x2211;',         'Insert LaTeX inline',        () => openLatexModal(false), 'latex-btn'),
+    btn('&#x2211;&#x25AD;', 'Insert LaTeX display block', () => openLatexModal(true),  'latex-btn')
+  );
+  if (!opts.compact) {
+    tb.append(
+      btn('&#x1F5BC;', 'Insert image', () => openImgModal()),
+      btn('&#x229E;',  'Insert table', () => openTableModal())
+    );
+  }
+  tb.append(sep(), btn('&#x2715;<sub>fmt</sub>', 'Remove formatting', () => fmt('removeFormat')));
+
+  const ed = document.createElement('div');
+  ed.className = 'wysiwyg-editor' + ((opts.compact || opts.small) ? ' compact' : '');
+  ed.contentEditable = 'true';
+  ed.setAttribute('data-placeholder', opts.placeholder || 'Type here…');
+  ed.addEventListener('focus', () => { document.execCommand('defaultParagraphSeparator', false, 'br'); activeEditor = ed; });
+  ed.addEventListener('blur', saveSel);
+  ed.addEventListener('input', () => { if (opts.onChange) opts.onChange(); });
+
+  function updateLatexContext() {
+    const s = window.getSelection();
+    if (!s || !s.rangeCount || document.activeElement !== ed) { tb.classList.remove('in-latex'); return; }
+    const anchor = s.anchorNode;
+    const el = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor;
+    tb.classList.toggle('in-latex', !!(el && el.closest && el.closest('latex') && ed.contains(el)));
+  }
+  ed.addEventListener('keyup', updateLatexContext);
+  ed.addEventListener('mouseup', updateLatexContext);
+  ed.addEventListener('focus', updateLatexContext);
+  ed.addEventListener('blur', () => tb.classList.remove('in-latex'));
+
+  function inLatexNow() {
+    const s = window.getSelection();
+    if (!s || !s.rangeCount) return false;
+    const anchor = s.anchorNode;
+    const el = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor;
+    return !!(el && el.closest && el.closest('latex') && ed.contains(el));
+  }
+
+  function escapeInlineWrapper(e) {
+    const s = window.getSelection();
+    if (!s || !s.rangeCount || !s.isCollapsed) return false;
+    const range = s.getRangeAt(0);
+    const anchor = range.startContainer;
+    const INLINE_TAGS = ['CODE','KBD','MARK','SPAN','B','I','U','S','SUP','SUB','STRONG','EM','LATEX'];
+    const wrapper = (anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor).closest(INLINE_TAGS.join(','));
+    if (!wrapper || !ed.contains(wrapper)) return false;
+    const atEnd = (() => {
+      if (anchor.nodeType === Node.TEXT_NODE) {
+        if (anchor !== wrapper.lastChild && anchor.nextSibling) return false;
+        if (range.startOffset < anchor.length) return false;
+        let node = anchor.nextSibling;
+        while (node) { if (node.textContent.replace(/\u200B/g,'').length > 0) return false; node = node.nextSibling; }
+        return true;
+      }
+      return range.startOffset >= wrapper.childNodes.length;
+    })();
+    if (!atEnd) return false;
+    e.preventDefault();
+    let after = wrapper.nextSibling;
+    if (!after || after.nodeType !== Node.TEXT_NODE) { after = document.createTextNode('\u200B'); wrapper.parentNode.insertBefore(after, wrapper.nextSibling); }
+    const r = document.createRange();
+    const exitOffset = after.textContent.startsWith('\u200B') ? 1 : 0;
+    r.setStart(after, exitOffset); r.collapse(true);
+    s.removeAllRanges(); s.addRange(r);
+    return true;
+  }
+
+  if (opts.compact) {
+    ed.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'End') { if (escapeInlineWrapper(e)) return; }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.execCommand('insertHTML', false, '<br>'); }
+    });
+  } else {
+    ed.addEventListener('keydown', e => {
+      const s = window.getSelection();
+      if (!s || !s.rangeCount) return;
+      const range = s.getRangeAt(0);
+      if ((e.key === 'ArrowRight' || e.key === 'End') && range.collapsed) { if (escapeInlineWrapper(e)) return; }
+      if (e.key === 'Tab') {
+        const td = _getCaretTd();
+        if (td) {
+          e.preventDefault();
+          const table = td.closest('table');
+          const allCells = Array.from(table.querySelectorAll('td,th'));
+          const idx = allCells.indexOf(td);
+          if (!e.shiftKey) { if (idx < allCells.length - 1) _placeCaret(allCells[idx + 1]); else tblInsertLineAfter(); }
+          else { if (idx > 0) _placeCaret(allCells[idx - 1]); }
+          return;
+        }
+      }
+      if (e.key === 'Backspace' && range.collapsed) {
+        const anchor = range.startContainer;
+        const li = (anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor).closest('li');
+        if (li) {
+          const isAtStart = (() => {
+            if (range.startOffset !== 0) return false;
+            let node = range.startContainer;
+            while (node && node !== li) { if (node.previousSibling) return false; node = node.parentNode; }
+            return node === li;
+          })();
+          if (isAtStart) { e.preventDefault(); document.execCommand('outdent', false, null); if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview(); return; }
+        }
+      }
+      if (e.key === 'Enter' && !e.shiftKey && range.collapsed) {
+        const anchor = range.startContainer;
+        const bq = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement.closest('blockquote') : (anchor.closest ? anchor.closest('blockquote') : null);
+        if (bq && ed.contains(bq)) {
+          let emptyLine = false;
+          if (anchor.nodeType === Node.TEXT_NODE && bq.contains(anchor)) {
+            const clean = t => t.replace(/\u200B/g,'').trim();
+            emptyLine = clean(anchor.textContent) === '' && (!anchor.previousSibling || anchor.previousSibling.nodeName === 'BR');
+          } else if (anchor === bq) {
+            const prevChild = range.startOffset > 0 ? bq.childNodes[range.startOffset - 1] : null;
+            emptyLine = !prevChild || prevChild.nodeName === 'BR';
+          }
+          if (emptyLine) {
+            e.preventDefault();
+            if (bq.lastChild && bq.lastChild.nodeName === 'BR') bq.removeChild(bq.lastChild);
+            if (bq.lastChild && bq.lastChild.nodeType === Node.TEXT_NODE && bq.lastChild.textContent.replace(/\u200B/g,'').trim() === '') bq.removeChild(bq.lastChild);
+            let exit = bq.nextSibling;
+            if (!exit || exit.nodeType !== Node.TEXT_NODE) { exit = document.createTextNode('\u200B'); bq.parentNode.insertBefore(exit, bq.nextSibling); }
+            const r = document.createRange(); r.setStart(exit, 0); r.collapse(true);
+            s.removeAllRanges(); s.addRange(r);
+            activeEditor.dispatchEvent(new Event('input')); refreshPreview(); return;
+          }
+        }
+      }
+    });
+  }
+
+  const raw = document.createElement('textarea');
+  raw.className = 'raw-editor' + ((opts.compact || opts.small) ? ' compact' : '');
+  raw.placeholder = (opts.placeholder || '').replace(/<[^>]+>/g, '');
+  raw.addEventListener('input', () => { if (opts.onChange) opts.onChange(); });
+
+  wrap.append(tb, ed, raw);
+  if (mountEl) mountEl.appendChild(wrap);
+  wrap._ed  = ed;
+  wrap._raw = raw;
+  return wrap;
+}
+
+// ── SELECTION HELPERS ────────────────────────────────────────────────
+function saveSel() {
+  const s = window.getSelection();
+  if (s && s.rangeCount > 0) savedRange = s.getRangeAt(0).cloneRange();
+}
+function restoreSel() {
+  if (!activeEditor || !savedRange) return;
+  if (document.activeElement === activeEditor) return;
+  activeEditor.focus();
+  const s = window.getSelection();
+  s.removeAllRanges(); s.addRange(savedRange);
+}
+function fmt(cmd) { restoreSel(); document.execCommand(cmd, false, null); if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview(); }
+function wrapSel(before, after) {
+  restoreSel();
+  const s = window.getSelection();
+  if (!s || !s.rangeCount) return;
+  const range = s.getRangeAt(0);
+  const txt = range.toString();
+  const tagName = (before.match(/<([a-z][a-z0-9]*)/i) || [])[1] || 'span';
+  const wrapEl = document.createElement(tagName);
+  if (txt) { wrapEl.textContent = txt; range.deleteContents(); }
+  range.insertNode(wrapEl);
+  const zwsp = document.createTextNode('\u200B');
+  wrapEl.parentNode.insertBefore(zwsp, wrapEl.nextSibling);
+  if (txt) {
+    const r = document.createRange(); r.setStart(zwsp, 0); r.collapse(true);
+    s.removeAllRanges(); s.addRange(r);
+  } else {
+    const innerText = document.createTextNode('\u200B');
+    wrapEl.appendChild(innerText);
+    range.insertNode(wrapEl);
+    const zwsp2 = document.createTextNode('\u200B');
+    wrapEl.parentNode.insertBefore(zwsp2, wrapEl.nextSibling);
+    const r = document.createRange(); r.setStart(innerText, 0); r.collapse(true);
+    s.removeAllRanges(); s.addRange(r);
+  }
+  if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview();
+}
+function wrapBlock(tag) {
+  restoreSel();
+  const s = window.getSelection();
+  if (!s || !s.rangeCount) return;
+  const range = s.getRangeAt(0);
+  const el = document.createElement(tag);
+  el.appendChild(range.extractContents());
+  if (!el.firstChild) el.appendChild(document.createElement('br'));
+  s.getRangeAt(0).insertNode(el);
+  let exitNode = el.nextSibling;
+  if (!exitNode || exitNode.nodeType !== Node.TEXT_NODE) { exitNode = document.createTextNode('\u200B'); el.parentNode.insertBefore(exitNode, el.nextSibling); }
+  const r = document.createRange(); r.selectNodeContents(el); r.collapse(false);
+  s.removeAllRanges(); s.addRange(r);
+  if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview();
+}
+
+// ── EDITOR CONTENT ───────────────────────────────────────────────────
+function getEditorContent(wrap) {
+  if (!wrap) return '';
+  return wrap.classList.contains('raw-mode') ? wrap._raw.value.trim() : getHTML(wrap._ed);
+}
+function setEditorContent(wrap, html) {
+  if (!wrap) return;
+  wrap._ed.innerHTML = html || '';
+  wrap._raw.value    = html || '';
+}
+function getHTML(el) {
+  if (!el) return '';
+  let h = el.innerHTML;
+  h = h.replace(/\u200B|&#8203;/g, '');
+  h = h.replace(/<div><br\s*\/?><\/div>/gi, '<br>');
+  h = h.replace(/<div>([\s\S]*?)<\/div>/gi, '$1<br>');
+  h = h.replace(/^(\s*<br\s*\/?>\s*)+/i,'').replace(/(\s*<br\s*\/?>\s*)+$/i,'');
+  return h.trim();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────
+function init() {
+  questionWrap = createEditor(document.getElementById('q-editor-mount'), {
+    placeholder: 'Type the question here. Use the toolbar for formatting, LaTeX, images…',
+    onChange: refreshPreview
+  });
+  answerWrap = createEditor(document.getElementById('answer-editor-mount'), {
+    placeholder: 'Type the answer here…',
+    compact: true,
+    onChange: refreshPreview
+  });
+  contextWrap = createEditor(document.getElementById('context-editor-mount'), {
+    placeholder: 'Provide the context passage or paragraph here…',
+    onChange: refreshPreview
+  });
+  reasonWrap = createEditor(document.getElementById('reason-editor-mount'), {
+    placeholder: 'Explain why the correct answer is right (optional)…',
+    onChange: refreshPreview
+  });
+  buildChoiceRows(4);
+  buildSeqItemRows(3);
+  onTypeChange();
+  renderList();
+}
+
+// ── TYPE CHANGE ───────────────────────────────────────────────────────
+function onTypeChange() {
+  const type  = document.getElementById('f-type').value;
+  const isMC  = type === 'Multi Choice';
+  const isSeq = type === 'Arrange in logical sequence';
+  const isCtx = type === 'Context Based';
+  const isTF  = type === 'True or False';
+  const sectQ = document.getElementById('section-question');
+  const sectR = document.getElementById('section-reason');
+  document.getElementById('section-context').style.display    = isCtx ? '' : 'none';
+  if (sectQ) sectQ.style.display = isCtx ? 'none' : '';
+  if (sectR) sectR.style.display = isCtx ? 'none' : '';
+  if (isCtx) {
+    document.getElementById('section-choices').style.display    = 'none';
+    document.getElementById('section-seq-items').style.display  = 'none';
+    document.getElementById('section-answer').style.display     = 'none';
+    document.getElementById('section-tf-answer').style.display  = 'none';
+    if (_csStore(-1).length === 0) buildCtxSubQList(-1, null);
+  } else {
+    document.getElementById('section-choices').style.display    = isMC  ? '' : 'none';
+    document.getElementById('section-seq-items').style.display  = isSeq ? '' : 'none';
+    document.getElementById('section-tf-answer').style.display  = isTF  ? '' : 'none';
+    document.getElementById('section-answer').style.display     = (type && !isMC && !isTF) ? '' : 'none';
+  }
+  refreshPreview();
+}
+
+// ── SEQ ITEM ROWS ────────────────────────────────────────────────────
+function buildSeqItemRows(n, vals) {
+  seqItemCount = Math.max(2, Math.min(SEQ_MAX, n));
+  const list = document.getElementById('seq-items-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (let i = 0; i < seqItemCount; i++) list.appendChild(makeSeqItemRow(i, (vals && vals[i]) || ''));
+  updateSeqAddBtn(); refreshPreview();
+}
+function makeSeqItemRow(idx, value) {
+  const row = document.createElement('div');
+  row.className = 'choice-row'; row.dataset.idx = idx;
+  const numWrap = document.createElement('div');
+  numWrap.className = 'choice-radio-wrap';
+  numWrap.innerHTML = `<span class="choice-label-idx" style="font-size:.95rem;font-weight:700;padding-top:36px;display:block;text-align:center">${idx + 1}</span>`;
+  const w = createEditor(null, { placeholder: `Item ${idx + 1}\u2026`, small: true, onChange: refreshPreview });
+  setEditorContent(w, value || '');
+  if (editorMode === 'raw') w.classList.add('raw-mode');
+  const del = document.createElement('button');
+  del.className = 'btn-icon'; del.title = 'Remove item'; del.innerHTML = '&#x2715;';
+  del.disabled = seqItemCount <= 2;
+  del.addEventListener('click', () => App.removeSeqItem(idx));
+  row.append(numWrap, w, del);
+  return row;
+}
+function getSeqItems() {
+  return Array.from(document.querySelectorAll('#seq-items-list .choice-row')).map(r => {
+    const w = r.querySelector('.wysiwyg-wrap');
+    return w ? getEditorContent(w) : '';
+  });
+}
+function addSeqItem() { if (seqItemCount >= SEQ_MAX) return; buildSeqItemRows(seqItemCount + 1, getSeqItems()); }
+function removeSeqItem(idx) { if (seqItemCount <= 2) return; const v = getSeqItems(); v.splice(idx, 1); buildSeqItemRows(seqItemCount - 1, v); }
+function updateSeqAddBtn() { const b = document.getElementById('seq-add-btn'); if (b) b.disabled = seqItemCount >= SEQ_MAX; }
+
+// ── CHOICE ROWS ──────────────────────────────────────────────────────
+function buildChoiceRows(n, vals, correct) {
+  choiceCount = Math.max(2, Math.min(6, n));
+  if (correct === undefined || correct === null) correct = 0;
+  const list = document.getElementById('choices-list');
+  list.innerHTML = '';
+  for (let i = 0; i < choiceCount; i++) list.appendChild(makeChoiceRow(i, (vals && vals[i]) || '', correct === i));
+  updateAddBtn(); refreshPreview();
+}
+function makeChoiceRow(idx, value, isCorrect) {
+  const row = document.createElement('div');
+  row.className = 'choice-row'; row.dataset.idx = idx;
+  const rw = document.createElement('div');
+  rw.className = 'choice-radio-wrap';
+  rw.innerHTML = `<input type="radio" name="correct-choice" value="${idx}" title="Mark as correct answer" ${isCorrect ? 'checked' : ''} /><span class="choice-label-idx">${LETTERS[idx]}</span>`;
+  rw.querySelector('input').addEventListener('change', refreshPreview);
+  const w = createEditor(null, { placeholder: `Choice ${LETTERS[idx]}…`, small: true, onChange: refreshPreview });
+  setEditorContent(w, value || '');
+  if (editorMode === 'raw') w.classList.add('raw-mode');
+  const del = document.createElement('button');
+  del.className = 'btn-icon'; del.title = 'Remove choice'; del.innerHTML = '&#x2715;';
+  del.disabled = choiceCount <= 2;
+  del.addEventListener('click', () => App.removeChoice(idx));
+  row.append(rw, w, del);
+  return row;
+}
+function getChoices() {
+  return Array.from(document.querySelectorAll('#choices-list .choice-row')).map(r => {
+    const w = r.querySelector('.wysiwyg-wrap');
+    return w ? getEditorContent(w) : '';
+  });
+}
+function getCorrect() {
+  const r = document.querySelector('#choices-list input[type="radio"]:checked');
+  return r ? parseInt(r.value, 10) : 0;
+}
+function updateAddBtn() { const b = document.querySelector('.btn-icon.add'); if (b) b.disabled = choiceCount >= 6; }
+
+// ── PREVIEW ──────────────────────────────────────────────────────────
+function refreshPreview() {
+  const box  = document.getElementById('preview-box');
+  const type = document.getElementById('f-type').value;
+  const qt   = questionWrap ? getEditorContent(questionWrap) : '';
+  if (!qt && !type) { box.innerHTML = '<div class="preview-placeholder">Start typing a question to see a live preview&#x2026;</div>'; return; }
+  let h = '';
+  if (type) h += `<div class="preview-type-tag">${escHtml(type)}</div>`;
+  if (type === 'Context Based') {
+    const ctx = contextWrap ? getEditorContent(contextWrap) : '';
+    if (ctx) h += `<div class="preview-answer"><div class="preview-answer-lbl">Context</div>${renderLatex(ctx)}</div>`;
+    const store = _csStore(-1);
+    store.forEach((sq, n) => {
+      const sub = document.getElementById(`ctx-sq-type-${n}`)?.value || '';
+      const sqQt = sq.qWrap ? getEditorContent(sq.qWrap) : '';
+      if (!sqQt && !sub) return;
+      h += `<div class="preview-q" style="margin-top:12px;${n>0?'padding-top:10px;border-top:1px solid rgba(255,255,255,.1);':''}">${store.length>1?`<strong>${n+1}.</strong> `:''}${renderLatex(sqQt)}</div>`;
+      if (sub === 'Multi Choice') {
+        const ci = _csGetCorrect(-1, n);
+        _csGetChoices(-1, n).forEach((c, i) => {
+          if (!c) return;
+          h += `<div class="preview-choice ${i===ci&&c?'correct':''}"><span class="choice-letter">${LETTERS[i]}.</span><span>${renderLatex(c)}</span></div>`;
+        });
+      } else if (sub === 'Arrange in logical sequence') {
+        _csGetSeqItems(-1, n).forEach((item, i) => {
+          if (!item) return;
+          h += `<div class="preview-choice"><span class="choice-letter">${i+1}.</span><span>${renderLatex(item)}</span></div>`;
+        });
+        const ans = sq.answerWrap ? getEditorContent(sq.answerWrap) : '';
+        if (ans) h += `<div class="preview-answer"><div class="preview-answer-lbl">Correct Sequence</div>${renderLatex(ans)}</div>`;
+      } else if (sub) {
+        const ans = sq.answerWrap ? getEditorContent(sq.answerWrap) : '';
+        if (ans) h += `<div class="preview-answer"><div class="preview-answer-lbl">Answer</div>${renderLatex(ans)}</div>`;
+      }
+      const reason = sq.reasonWrap ? getEditorContent(sq.reasonWrap) : '';
+      if (reason) h += `<div class="preview-reason"><div class="preview-reason-lbl">Reason</div>${renderLatex(reason)}</div>`;
+    });
+  } else {
+    if (qt) h += `<div class="preview-q">${renderLatex(qt)}</div>`;
+    if (type === 'Multi Choice') {
+    const ch = getChoices();
+    const ci = getCorrect();
+    ch.forEach((c, i) => {
+      if (!c) return;
+      h += `<div class="preview-choice ${i === ci && c ? 'correct' : ''}"><span class="choice-letter">${LETTERS[i]}.</span><span>${renderLatex(c)}</span></div>`;
+    });
+  } else if (type === 'True or False') {
+    const tfAns = document.querySelector('input[name="tf-answer"]:checked')?.value || 'True';
+    ['True', 'False'].forEach((lbl, i) => {
+      h += `<div class="preview-choice ${lbl === tfAns ? 'correct' : ''}"><span class="choice-letter">${LETTERS[i]}.</span><span>${lbl}</span></div>`;
+    });
+  } else if (type === 'Arrange in logical sequence') {
+    const items = getSeqItems();
+    items.forEach((item, i) => {
+      if (!item) return;
+      h += `<div class="preview-choice"><span class="choice-letter">${i + 1}.</span><span>${renderLatex(item)}</span></div>`;
+    });
+    const ans = answerWrap ? getEditorContent(answerWrap) : '';
+    if (ans) h += `<div class="preview-answer"><div class="preview-answer-lbl">Correct Sequence</div>${renderLatex(ans)}</div>`;
+  } else if (type) {
+    const ans = answerWrap ? getEditorContent(answerWrap) : '';
+    if (ans) h += `<div class="preview-answer"><div class="preview-answer-lbl">Answer</div>${renderLatex(ans)}</div>`;
+  }
+  const reason = (type !== 'Context Based' && reasonWrap) ? getEditorContent(reasonWrap) : '';
+  if (reason) h += `<div class="preview-reason"><div class="preview-reason-lbl">Reason</div>${renderLatex(reason)}</div>`;
+  }
+  box.innerHTML = h || '<div class="preview-placeholder">Start typing a question to see a live preview&#x2026;</div>';
+}
+function decodeHtmlEntities(str) { const ta = document.createElement('textarea'); ta.innerHTML = str; return ta.value; }
+function renderLatex(html) {
+  return html
+    .replace(/<latex\s+display(?:="")?\s*>([\s\S]*?)<\/latex>/gi, (_, t) => {
+      const tex = decodeHtmlEntities(t.trim());
+      try { return katex.renderToString(tex, { displayMode: true, throwOnError: false }); }
+      catch(e) { return '<code>' + escHtml(tex) + '</code>'; }
+    })
+    .replace(/<latex>([\s\S]*?)<\/latex>/gi, (_, t) => {
+      const tex = decodeHtmlEntities(t.trim());
+      try { return katex.renderToString(tex, { displayMode: false, throwOnError: false }); }
+      catch(e) { return '<code>' + escHtml(tex) + '</code>'; }
+    });
+}
+
+// ── LATEX MODAL ──────────────────────────────────────────────────────
+function openLatexModal(display) {
+  const val = display ? 'display' : 'inline';
+  document.querySelector(`input[name="latex-mode"][value="${val}"]`).checked = true;
+  const sel = window.getSelection();
+  insertionRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : savedRange;
+  const selectedText = (sel && !sel.isCollapsed) ? sel.toString().trim() : '';
+  const latexInput = document.getElementById('latex-input');
+  latexInput.value = selectedText;
+  const previewBox = document.getElementById('latex-preview-box');
+  if (selectedText) {
+    try { previewBox.innerHTML = katex.renderToString(selectedText, { displayMode: display, throwOnError: false }); }
+    catch(e) { previewBox.innerHTML = '&#x2014;'; }
+  } else { previewBox.innerHTML = '&#x2014;'; }
+  document.getElementById('latex-overlay').classList.add('open');
+  setTimeout(() => { latexInput.focus(); latexInput.select(); }, 50);
+}
+function closeLatexModal() { document.getElementById('latex-overlay').classList.remove('open'); if (activeEditor) activeEditor.focus(); }
+function latexOverlayClick(e) { if (e.target.id === 'latex-overlay') closeLatexModal(); }
+function latexPreview() {
+  const tex = document.getElementById('latex-input').value.trim();
+  const dm  = document.querySelector('input[name="latex-mode"]:checked').value === 'display';
+  const box = document.getElementById('latex-preview-box');
+  if (!tex) { box.innerHTML = '&#x2014;'; return; }
+  try { box.innerHTML = katex.renderToString(tex, { displayMode: dm, throwOnError: true }); }
+  catch(e) { box.innerHTML = '<span class="latex-error">&#x26A0; ' + escHtml(e.message) + '</span>'; }
+}
+function insertLatex() {
+  const tex = document.getElementById('latex-input').value.trim();
+  const dm  = document.querySelector('input[name="latex-mode"]:checked').value === 'display';
+  if (!tex) { toast('Enter a LaTeX expression first.', 'error'); return; }
+  const tag = dm ? `<latex display>${tex}</latex>` : `<latex>${tex}</latex>`;
+  closeLatexModal();
+  if (insertionRange && activeEditor) { activeEditor.focus(); const s = window.getSelection(); s.removeAllRanges(); s.addRange(insertionRange); }
+  else restoreSel();
+  const markerId = 'ltx-caret-' + Date.now();
+  document.execCommand('insertHTML', false, tag + `<span id="${markerId}"></span>`);
+  const markerEl = document.getElementById(markerId);
+  if (markerEl) {
+    const range = document.createRange(); range.setStartAfter(markerEl); range.collapse(true);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); markerEl.remove();
+  }
+  if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview();
+}
+
+// ── IMAGE MODAL ──────────────────────────────────────────────────────
+function openImgModal() {
+  const sel = window.getSelection();
+  insertionRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : savedRange;
+  ['img-url','img-alt','img-width'].forEach(id => document.getElementById(id).value = '');
+  const p = document.getElementById('img-preview-el'); p.src = ''; p.style.display = 'none';
+  document.getElementById('img-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('img-url').focus(), 50);
+}
+function closeImgModal() { document.getElementById('img-overlay').classList.remove('open'); if (activeEditor) activeEditor.focus(); }
+function imgOverlayClick(e) { if (e.target.id === 'img-overlay') closeImgModal(); }
+function imgPreviewUpdate() {
+  const url = document.getElementById('img-url').value.trim();
+  const p = document.getElementById('img-preview-el');
+  if (url) { p.src = url; p.style.display = 'block'; } else { p.src = ''; p.style.display = 'none'; }
+}
+function insertImage() {
+  const url = document.getElementById('img-url').value.trim();
+  if (!url) { toast('Enter an image URL first.', 'error'); return; }
+  const alt = document.getElementById('img-alt').value.trim();
+  const w   = document.getElementById('img-width').value.trim();
+  const sty = w ? ` style="max-width:100%;width:${escAttr(w)}"` : ' style="max-width:100%"';
+  const html = `<img src="${escAttr(url)}" alt="${escAttr(alt)}"${sty} />`;
+  closeImgModal();
+  if (insertionRange && activeEditor) { activeEditor.focus(); const s = window.getSelection(); s.removeAllRanges(); s.addRange(insertionRange); }
+  else restoreSel();
+  document.execCommand('insertHTML', false, html);
+  if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview();
+}
+
+// ── TABLE MODAL ──────────────────────────────────────────────────────
+const TABLE_MAX_ROWS = 8, TABLE_MAX_COLS = 8;
+let tableSelRows = 0, tableSelCols = 0;
+function openTableModal() {
+  const sel = window.getSelection();
+  insertionRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : savedRange;
+  tableSelRows = 0; tableSelCols = 0;
+  document.getElementById('table-insert-btn').disabled = true;
+  document.getElementById('table-size-label').textContent = 'Hover to select size';
+  buildTableGrid();
+  document.getElementById('table-overlay').classList.add('open');
+}
+function closeTableModal() { document.getElementById('table-overlay').classList.remove('open'); if (activeEditor) activeEditor.focus(); }
+function tableOverlayClick(e) { if (e.target.id === 'table-overlay') closeTableModal(); }
+function buildTableGrid() {
+  const picker = document.getElementById('table-grid-picker');
+  picker.style.gridTemplateColumns = `repeat(${TABLE_MAX_COLS}, 22px)`;
+  picker.innerHTML = '';
+  for (let r = 1; r <= TABLE_MAX_ROWS; r++) {
+    for (let c = 1; c <= TABLE_MAX_COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'tg-cell'; cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('mouseover', () => highlightGrid(r, c));
+      cell.addEventListener('click', () => { tableSelRows = r; tableSelCols = c; commitGridSelect(r, c); });
+      picker.appendChild(cell);
+    }
+  }
+  picker.addEventListener('mouseleave', () => highlightGrid(tableSelRows, tableSelCols));
+}
+function highlightGrid(rows, cols) {
+  document.querySelectorAll('#table-grid-picker .tg-cell').forEach(cell => { cell.classList.toggle('hover', +cell.dataset.r <= rows && +cell.dataset.c <= cols); });
+  document.getElementById('table-size-label').textContent = rows && cols ? `${rows} × ${cols} table` : 'Hover to select size';
+}
+function commitGridSelect(rows, cols) { tableSelRows = rows; tableSelCols = cols; highlightGrid(rows, cols); document.getElementById('table-insert-btn').disabled = false; document.getElementById('table-size-label').textContent = `${rows} × ${cols} table selected`; }
+function insertTable() {
+  if (!tableSelRows || !tableSelCols) { toast('Select a table size first.', 'error'); return; }
+  const hasHeader = document.getElementById('table-header-row').checked;
+  const borders   = document.getElementById('table-borders').checked;
+  const bStyle  = borders ? ' border="1" style="border-collapse:collapse;width:100%"' : ' style="border-collapse:collapse;width:100%"';
+  const tdStyle = borders ? ' style="border:1px solid #d1d5db;padding:6px 10px"' : ' style="padding:6px 10px"';
+  const thStyle = borders ? ' style="border:1px solid #d1d5db;padding:6px 10px;background:#ede9fe;font-weight:700"' : ' style="padding:6px 10px;font-weight:700"';
+  let html = `<table${bStyle}>`;
+  for (let r = 1; r <= tableSelRows; r++) {
+    html += '<tr>';
+    for (let c = 1; c <= tableSelCols; c++) {
+      html += r === 1 && hasHeader ? `<th${thStyle}>Header ${c}</th>` : `<td${tdStyle}>&nbsp;</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table><br>';
+  closeTableModal();
+  if (insertionRange && activeEditor) { activeEditor.focus(); const s = window.getSelection(); s.removeAllRanges(); s.addRange(insertionRange); }
+  else restoreSel();
+  document.execCommand('insertHTML', false, html);
+  if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview();
+}
+
+// ── TABLE FLOAT TOOLBAR ──────────────────────────────────────────────
+function _getCaretTd() { const s = window.getSelection(); if (!s || !s.rangeCount) return null; const node = s.anchorNode; const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node; return el ? el.closest('td,th') : null; }
+function _getCaretTable() { const td = _getCaretTd(); return td ? td.closest('table') : null; }
+function _placeCaret(cell) { if (!cell || !activeEditor) return; activeEditor.focus(); const r = document.createRange(); r.selectNodeContents(cell); r.collapse(true); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+function _tblAfter(focusCell) { if (focusCell) _placeCaret(focusCell); else if (activeEditor) activeEditor.focus(); if (activeEditor) activeEditor.dispatchEvent(new Event('input')); refreshPreview(); setTimeout(updateTblFloatBar, 0); }
+function updateTblFloatBar() {
+  const bar = document.getElementById('tbl-float-bar');
+  if (!bar) return;
+  const table = _getCaretTable();
+  if (!table || !activeEditor || !activeEditor.contains(table)) { bar.classList.remove('visible'); return; }
+  const rect = table.getBoundingClientRect();
+  const barH = bar.offsetHeight || 34;
+  let top = rect.top - barH - 8;
+  if (top < 4) top = rect.bottom + 6;
+  bar.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - 320)) + 'px';
+  bar.style.top  = top + 'px';
+  bar.classList.add('visible');
+}
+document.addEventListener('selectionchange', () => setTimeout(updateTblFloatBar, 0));
+function tblAddRowAbove() { const td = _getCaretTd(); if (!td) return; const tr = td.closest('tr'); if (!tr) return; const colIdx = Array.from(tr.querySelectorAll('td,th')).indexOf(td); const cols = tr.querySelectorAll('td,th').length; const newRow = document.createElement('tr'); for (let i = 0; i < cols; i++) { const c = document.createElement('td'); c.style.cssText = td.getAttribute('style') || ''; c.innerHTML = '&nbsp;'; newRow.appendChild(c); } tr.parentNode.insertBefore(newRow, tr); _tblAfter(newRow.querySelectorAll('td,th')[colIdx] || td); }
+function tblAddRowBelow() { const td = _getCaretTd(); if (!td) return; const tr = td.closest('tr'); if (!tr) return; const colIdx = Array.from(tr.querySelectorAll('td,th')).indexOf(td); const cols = tr.querySelectorAll('td,th').length; const newRow = document.createElement('tr'); for (let i = 0; i < cols; i++) { const c = document.createElement('td'); c.style.cssText = td.getAttribute('style') || ''; c.innerHTML = '&nbsp;'; newRow.appendChild(c); } tr.parentNode.insertBefore(newRow, tr.nextSibling); _tblAfter(newRow.querySelectorAll('td,th')[colIdx] || td); }
+function tblRemoveRow() { const td = _getCaretTd(); if (!td) return; const tr = td.closest('tr'); if (!tr) return; const tbody = tr.parentNode; if (tbody.querySelectorAll('tr').length <= 1) { toast('Cannot remove the only row.', 'error'); return; } const colIdx = Array.from(tr.querySelectorAll('td,th')).indexOf(td); const targetRow = tr.previousElementSibling || tr.nextElementSibling; tr.remove(); const focusCell = targetRow ? targetRow.querySelectorAll('td,th')[colIdx] || targetRow.querySelector('td,th') : null; _tblAfter(focusCell); }
+function tblAddColLeft() { const td = _getCaretTd(); if (!td) return; const table = td.closest('table'); if (!table) return; const colIdx = Array.from(td.parentElement.querySelectorAll('td,th')).indexOf(td); table.querySelectorAll('tr').forEach(tr => { const cells = tr.querySelectorAll('td,th'); if (!cells[colIdx]) return; const ref = cells[colIdx]; const c = document.createElement('td'); c.style.cssText = ref.getAttribute('style') || ''; c.innerHTML = '&nbsp;'; tr.insertBefore(c, ref); }); _tblAfter(td); }
+function tblAddColRight() { const td = _getCaretTd(); if (!td) return; const table = td.closest('table'); if (!table) return; const colIdx = Array.from(td.parentElement.querySelectorAll('td,th')).indexOf(td); let newCell = null; table.querySelectorAll('tr').forEach(tr => { const cells = tr.querySelectorAll('td,th'); if (!cells[colIdx]) return; const ref = cells[colIdx]; const c = document.createElement('td'); c.style.cssText = ref.getAttribute('style') || ''; c.innerHTML = '&nbsp;'; ref.parentNode.insertBefore(c, ref.nextSibling); if (ref === td) newCell = c; }); _tblAfter(newCell || td); }
+function tblRemoveCol() { const td = _getCaretTd(); if (!td) return; const table = td.closest('table'); if (!table) return; const colIdx = Array.from(td.parentElement.querySelectorAll('td,th')).indexOf(td); let tooFew = false; table.querySelectorAll('tr').forEach(tr => { if (tr.querySelectorAll('td,th').length <= 1) tooFew = true; }); if (tooFew) { toast('Cannot remove the only column.', 'error'); return; } const tr = td.closest('tr'); const sibCells = tr.querySelectorAll('td,th'); const focusCell = sibCells[colIdx + 1] || sibCells[colIdx - 1] || null; table.querySelectorAll('tr').forEach(tr => { const cells = tr.querySelectorAll('td,th'); if (cells[colIdx]) cells[colIdx].remove(); }); _tblAfter(focusCell); }
+function tblInsertLineBefore() { const table = _getCaretTable(); if (!table || !activeEditor) return; const node = document.createTextNode('\u200B'); table.parentNode.insertBefore(node, table); activeEditor.focus(); const r = document.createRange(); r.setStart(node, 0); r.collapse(true); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); activeEditor.dispatchEvent(new Event('input')); refreshPreview(); }
+function tblInsertLineAfter() { const table = _getCaretTable(); if (!table || !activeEditor) return; let anchor = table.nextSibling; if (anchor && anchor.nodeName === 'BR') anchor = anchor.nextSibling; const node = document.createTextNode('\u200B'); table.parentNode.insertBefore(node, anchor || null); activeEditor.focus(); const r = document.createRange(); r.setStart(node, 0); r.collapse(true); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); activeEditor.dispatchEvent(new Event('input')); refreshPreview(); }
+function tblDeleteTable() { const table = _getCaretTable(); if (!table) return; if (!confirm('Delete this entire table?')) return; table.remove(); document.getElementById('tbl-float-bar').classList.remove('visible'); _tblAfter(); }
+
+// ── SAVE / EDIT ──────────────────────────────────────────────────────
+function saveQuestion() {
+  function flagError(el) { el.classList.remove('field-error'); void el.offsetWidth; el.classList.add('field-error'); setTimeout(() => el.classList.remove('field-error'), 2000); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+  const qtype = document.getElementById('f-type').value;
+
+  const qt = getEditorContent(questionWrap);
+  if (!qt && qtype !== 'Context Based') { toast('Question text is required.', 'error'); flagError(questionWrap); return; }
+
+  const obj = { question: qt, type: qtype };
+
+  if (qtype === 'Multi Choice') {
+    const ch = getChoices();
+    const emptyRows = Array.from(document.querySelectorAll('#choices-list .choice-row')).filter((row, i) => !ch[i]);
+    if (ch.filter(c => c).length < 2) {
+      toast('At least 2 choices must have content.', 'error');
+      emptyRows.forEach(row => { const w = row.querySelector('.wysiwyg-wrap'); if (w) flagError(w); });
+      if (emptyRows[0]) emptyRows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    let ci = getCorrect(), corrMap = 0, corrMapped = false;
+    const final = [];
+    ch.forEach((c, i) => { if (c) { if (i === ci && !corrMapped) { corrMap = final.length; corrMapped = true; } final.push(c); } });
+    if (!corrMapped) corrMap = 0;
+    obj.choices = final;
+    obj.answer = corrMap;
+  } else if (qtype === 'Arrange in logical sequence') {
+    const items = getSeqItems().filter(c => c);
+    if (items.length < 2) { toast('At least 2 items are required.', 'error'); return; }
+    const ans = answerWrap ? getEditorContent(answerWrap) : '';
+    if (!ans) { toast('Correct sequence answer is required.', 'error'); if (answerWrap) flagError(answerWrap); return; }
+    obj.choices = items;
+    obj.answer = ans;
+  } else if (qtype === 'True or False') {
+    const tfAns = document.querySelector('input[name="tf-answer"]:checked')?.value || 'True';
+    obj.answer  = tfAns;
+  } else if (qtype === 'Context Based') {
+    const ctx = contextWrap ? getEditorContent(contextWrap) : '';
+    if (!ctx) { toast('Context is required.', 'error'); if (contextWrap) flagError(contextWrap); return; }
+    const store = _csStore(-1);
+    if (store.length === 0) { toast('Add at least one question.', 'error'); return; }
+    const innerQuestions = [];
+    for (let i = 0; i < store.length; i++) {
+      const iq = _csBuildInnerQ(-1, i, flagError);
+      if (!iq) return;
+      innerQuestions.push(iq);
+    }
+    questions.push({ context: ctx, questions: innerQuestions });
+    toast('Question saved!', 'success');
+    clearForm();
+    renderList(); updateDlBtn();
+    return;
+  } else {
+    const ans = answerWrap ? getEditorContent(answerWrap) : '';
+    if (!ans) { toast('Answer is required.', 'error'); if (answerWrap) flagError(answerWrap); return; }
+    obj.choices = [];
+    obj.answer = ans;
+  }
+
+  const reason = reasonWrap ? getEditorContent(reasonWrap) : '';
+  if (reason) obj.reason = reason;
+
+  questions.push(obj);
+  toast('Question saved!', 'success');
+  clearForm();
+  renderList(); updateDlBtn();
+}
+
+function editQuestion(idx) {
+  if (editingIdx === idx) { cancelInlineEdit(); return; }
+  editingIdx = idx;
+  renderList();
+  setupInlineEditor(idx);
+}
+
+function cancelInlineEdit() {
+  editingIdx = null;
+  ieEditors = null;
+  renderList();
+}
+
+function clearForm() {
+  setEditorContent(questionWrap, '');
+  setEditorContent(reasonWrap,   '');
+  if (answerWrap)  setEditorContent(answerWrap, '');
+  if (contextWrap) setEditorContent(contextWrap, '');
+  document.getElementById('f-type').value = 'Multi Choice';
+  _csSet(-1, []);
+  const ctxList = document.getElementById('ctx-sub-questions-list');
+  if (ctxList) ctxList.innerHTML = '';
+  const tfTrue = document.getElementById('tf-true');
+  if (tfTrue) tfTrue.checked = true;;
+  buildChoiceRows(4);
+  buildSeqItemRows(3);
+  onTypeChange();
+}
+
+function setupInlineEditor(idx) {
+  const rawQ = questions[idx];
+  const isCtxGroup = rawQ && Array.isArray(rawQ.questions) && 'context' in rawQ;
+  let q;
+  if (isCtxGroup) {
+    const innerQ = rawQ.questions[0] || {};
+    q = { type: 'Context Based', subtype: innerQ.type, question: innerQ.question || '', answer: innerQ.answer, choices: innerQ.choices, reason: innerQ.reason, context: rawQ.context };
+  } else {
+    q = rawQ;
+  }
+  const container = document.getElementById(`ie-container-${idx}`);
+  if (!container) return;
+  const isMC  = q.type === 'Multi Choice';
+  const isSeq = q.type === 'Arrange in logical sequence';
+  const isTF  = q.type === 'True or False';
+  ieEditors = { qWrap: null, answerWrap: null, contextWrap: null, reasonWrap: null, choiceWraps: [], choiceCount: 0, correctIdx: 0, seqItemWraps: [], seqItemCount: 0 };
+  container.innerHTML = `
+    <div class="ie-sect">
+      <div class="ie-lbl">Type <span style="color:#f87171">*</span></div>
+      <select id="ie-type-${idx}" onchange="App.ieOnTypeChange(${idx})">
+        <option value="Multi Choice" ${q.type === 'Multi Choice' || !q.type ? 'selected' : ''}>Multi Choice</option>
+        <option value="Fill in the blanks" ${q.type === 'Fill in the blanks' ? 'selected' : ''}>Fill in the blanks</option>
+        <option value="Match the following" ${q.type === 'Match the following' ? 'selected' : ''}>Match the following</option>
+        <option value="Arrange in logical sequence" ${q.type === 'Arrange in logical sequence' ? 'selected' : ''}>Arrange in logical sequence</option>
+        <option value="True or False" ${q.type === 'True or False' ? 'selected' : ''}>True or False</option>
+        <option value="1 marks" ${q.type === '1 marks' ? 'selected' : ''}>1 marks</option>
+        <option value="2 marks" ${q.type === '2 marks' ? 'selected' : ''}>2 marks</option>
+        <option value="3 marks" ${q.type === '3 marks' ? 'selected' : ''}>3 marks</option>
+        <option value="4 marks" ${q.type === '4 marks' ? 'selected' : ''}>4 marks</option>
+        <option value="5 marks" ${q.type === '5 marks' ? 'selected' : ''}>5 marks</option>
+        <option value="Context Based" ${q.type === 'Context Based' ? 'selected' : ''}>Context Based</option>
+      </select>
+    </div>
+    <div class="ie-sect" id="ie-context-section-${idx}" style="${q.type === 'Context Based' ? '' : 'display:none'}">
+      <div class="ie-lbl">Context <span style="color:#f87171">*</span></div>
+      <div id="ie-context-mount-${idx}"></div>
+    </div>
+    <div class="ie-sect" id="ie-ctx-sq-section-${idx}" style="${q.type === 'Context Based' ? '' : 'display:none'}">
+      <div id="ie-ctx-sq-list-${idx}"></div>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+        <button class="btn btn-outline" id="ie-ctx-add-q-btn-${idx}" onclick="App.addCtxSubQ(${idx})" style="padding:8px 18px;font-size:.85rem">&#xFF0B; Add Question</button>
+      </div>
+    </div>
+    <div class="ie-sect" id="ie-q-section-${idx}" style="${q.type === 'Context Based' ? 'display:none' : ''}">
+      <div class="ie-lbl">Question <span style="color:#f87171">*</span></div>
+      <div id="ie-q-mount-${idx}"></div>
+    </div>
+    <div class="ie-sect" id="ie-choices-section-${idx}" style="${isMC ? '' : 'display:none'}">
+      <div class="ie-lbl">Answer Choices <span style="color:#f87171">*</span><span class="ie-hint">Radio = correct answer &nbsp;|&nbsp; 2&ndash;6 choices</span></div>
+      <div class="choices-list" id="ie-choices-${idx}"></div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <button class="btn-icon add" title="Add choice" id="ie-add-btn-${idx}" onclick="App.ieAddChoice(${idx})">&#xFF0B;</button>
+        <span style="font-size:.78rem;color:var(--muted)">Add choice (max 6)</span>
+      </div>
+    </div>
+    <div class="ie-sect" id="ie-seq-section-${idx}" style="${isSeq ? '' : 'display:none'}">
+      <div class="ie-lbl">Items to Arrange <span style="color:#f87171">*</span><span class="ie-hint">Enter each item &mdash; user will arrange them in the correct order</span></div>
+      <div class="choices-list" id="ie-seq-items-${idx}"></div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <button class="btn-icon add" title="Add item" id="ie-seq-add-btn-${idx}" onclick="App.ieAddSeqItem(${idx})">&#xFF0B;</button>
+        <span style="font-size:.78rem;color:var(--muted)">Add item (max 8)</span>
+      </div>
+    </div>
+    <div class="ie-sect" id="ie-tf-section-${idx}" style="${isTF ? '' : 'display:none'}">
+      <div class="ie-lbl">Correct Answer <span style="color:#f87171">*</span></div>
+      <div style="display:flex;gap:20px;margin-top:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.93rem">
+          <input type="radio" name="ie-tf-${idx}" value="True" ${!isTF || q.answer === 'True' ? 'checked' : ''} /> True
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.93rem">
+          <input type="radio" name="ie-tf-${idx}" value="False" ${isTF && q.answer === 'False' ? 'checked' : ''} /> False
+        </label>
+      </div>
+    </div>
+    <div class="ie-sect" id="ie-answer-section-${idx}" style="${(!isMC && !isTF && q.type && q.type !== 'Context Based') ? '' : 'display:none'}">
+      <div class="ie-lbl" id="ie-answer-lbl-${idx}">${isSeq ? 'Correct Sequence' : 'Answer'} <span style="color:#f87171">*</span></div>
+      <div id="ie-answer-mount-${idx}"></div>
+    </div>
+    <div class="ie-sect" id="ie-reason-section-${idx}" style="${q.type === 'Context Based' ? 'display:none' : ''}">
+      <div class="ie-lbl">Reason / Explanation<span class="ie-hint">optional</span></div>
+      <div id="ie-reason-mount-${idx}"></div>
+    </div>
+    <div class="ie-actions">
+      <button class="btn btn-outline" onclick="App.cancelInlineEdit()">&#x2715; Cancel</button>
+      <button class="btn btn-primary" onclick="App.saveInlineEdit(${idx})">&#x2714; Update Question</button>
+    </div>`;
+  ieEditors.qWrap = createEditor(document.getElementById(`ie-q-mount-${idx}`), { placeholder: 'Question text…' });
+  setEditorContent(ieEditors.qWrap, q.question || '');
+  ieEditors.answerWrap = createEditor(document.getElementById(`ie-answer-mount-${idx}`), { placeholder: isSeq ? 'e.g. Step 1 → Step 2 → Step 3…' : 'Type the answer here…', compact: true });
+  setEditorContent(ieEditors.answerWrap, (!isMC && typeof q.answer === 'string') ? q.answer : '');
+  ieEditors.contextWrap = createEditor(document.getElementById(`ie-context-mount-${idx}`), { placeholder: 'Provide the context passage or paragraph here…' });
+  setEditorContent(ieEditors.contextWrap, q.context || '');
+  ieEditors.reasonWrap = createEditor(document.getElementById(`ie-reason-mount-${idx}`), { placeholder: 'Explanation (optional)…' });
+  setEditorContent(ieEditors.reasonWrap, q.reason || '');
+  if (isMC) {
+    buildIeChoiceRows(idx, q.choices || [], typeof q.answer === 'number' ? q.answer : 0);
+    buildIeSeqItemRows(idx, [], 0);
+  } else if (isSeq) {
+    buildIeChoiceRows(idx, [], 0);
+    buildIeSeqItemRows(idx, q.choices || [], 0);
+  } else if (q.type === 'Context Based') {
+    buildIeChoiceRows(idx, [], 0);
+    buildIeSeqItemRows(idx, [], 0);
+    // Build sub-question panels using shared factory (scope=idx)
+    buildCtxSubQList(idx, rawQ.questions || []);
+  } else {
+    buildIeChoiceRows(idx, [], 0);
+    buildIeSeqItemRows(idx, [], 0);
+  }
+}
+
+function ieOnTypeChange(idx) {
+  const type   = document.getElementById(`ie-type-${idx}`).value;
+  const isMC   = type === 'Multi Choice';
+  const isSeq  = type === 'Arrange in logical sequence';
+  const isCtx  = type === 'Context Based';
+  const isTF   = type === 'True or False';
+  const choicesSection  = document.getElementById(`ie-choices-section-${idx}`);
+  const seqSection      = document.getElementById(`ie-seq-section-${idx}`);
+  const contextSection  = document.getElementById(`ie-context-section-${idx}`);
+  const ctxSqSection    = document.getElementById(`ie-ctx-sq-section-${idx}`);
+  const qSection        = document.getElementById(`ie-q-section-${idx}`);
+  const answerSection   = document.getElementById(`ie-answer-section-${idx}`);
+  const tfSection       = document.getElementById(`ie-tf-section-${idx}`);
+  const reasonSection   = document.getElementById(`ie-reason-section-${idx}`);
+  const answerLbl       = document.getElementById(`ie-answer-lbl-${idx}`);
+  if (contextSection)  contextSection.style.display  = isCtx ? '' : 'none';
+  if (ctxSqSection)    ctxSqSection.style.display    = isCtx ? '' : 'none';
+  if (qSection)        qSection.style.display        = isCtx ? 'none' : '';
+  if (reasonSection)   reasonSection.style.display   = isCtx ? 'none' : '';
+  if (isCtx) {
+    if (choicesSection) choicesSection.style.display = 'none';
+    if (seqSection)     seqSection.style.display     = 'none';
+    if (answerSection)  answerSection.style.display  = 'none';
+    if (tfSection)      tfSection.style.display      = 'none';
+    if (_csStore(idx).length === 0) buildCtxSubQList(idx, []);
+  } else {
+    if (choicesSection) choicesSection.style.display = isMC  ? '' : 'none';
+    if (seqSection)     seqSection.style.display     = isSeq ? '' : 'none';
+    if (tfSection)      tfSection.style.display      = isTF  ? '' : 'none';
+    if (answerSection)  answerSection.style.display  = (type && !isMC && !isTF) ? '' : 'none';
+    if (answerLbl) answerLbl.innerHTML = `${isSeq ? 'Correct Sequence' : 'Answer'} <span style="color:#f87171">*</span>`;
+  }
+}
+
+function buildIeSeqItemRows(qIdx, vals) {
+  if (!ieEditors) return;
+  const count = Math.max(2, Math.min(SEQ_MAX, vals.length || 2));
+  ieEditors.seqItemCount = count;
+  const list = document.getElementById(`ie-seq-items-${qIdx}`);
+  if (!list) return;
+  list.innerHTML = '';
+  ieEditors.seqItemWraps = [];
+  for (let i = 0; i < count; i++) {
+    const { row, wrap } = makeIeSeqItemRow(qIdx, i, vals[i] || '');
+    list.appendChild(row); ieEditors.seqItemWraps.push(wrap);
+  }
+  const addBtn = document.getElementById(`ie-seq-add-btn-${qIdx}`);
+  if (addBtn) addBtn.disabled = count >= SEQ_MAX;
+}
+
+function makeIeSeqItemRow(qIdx, sIdx, value) {
+  const row = document.createElement('div');
+  row.className = 'choice-row'; row.dataset.idx = sIdx;
+  const numWrap = document.createElement('div');
+  numWrap.className = 'choice-radio-wrap';
+  numWrap.innerHTML = `<span class="choice-label-idx" style="font-size:.95rem;font-weight:700;padding-top:36px;display:block;text-align:center">${sIdx + 1}</span>`;
+  const w = createEditor(null, { placeholder: `Item ${sIdx + 1}\u2026`, small: true });
+  setEditorContent(w, value || '');
+  const del = document.createElement('button');
+  del.className = 'btn-icon'; del.title = 'Remove item'; del.innerHTML = '&#x2715;';
+  del.disabled = ieEditors.seqItemCount <= 2;
+  del.addEventListener('click', () => App.ieRemoveSeqItem(qIdx, sIdx));
+  row.append(numWrap, w, del);
+  return { row, wrap: w };
+}
+
+function getIeSeqItems() {
+  if (!ieEditors) return [];
+  return ieEditors.seqItemWraps.map(w => getEditorContent(w));
+}
+
+function ieAddSeqItem(qIdx) {
+  if (!ieEditors || ieEditors.seqItemCount >= SEQ_MAX) return;
+  const vals = getIeSeqItems(); vals.push('');
+  buildIeSeqItemRows(qIdx, vals, 0);
+}
+
+function ieRemoveSeqItem(qIdx, sIdx) {
+  if (!ieEditors || ieEditors.seqItemCount <= 2) return;
+  const vals = getIeSeqItems(); vals.splice(sIdx, 1);
+  buildIeSeqItemRows(qIdx, vals, 0);
+}
+
+function buildIeChoiceRows(qIdx, vals, correct) {
+  if (!ieEditors) return;
+  const count = Math.max(2, Math.min(6, vals.length || 2));
+  ieEditors.choiceCount = count;
+  ieEditors.correctIdx = correct !== undefined ? correct : 0;
+  const list = document.getElementById(`ie-choices-${qIdx}`);
+  if (!list) return;
+  list.innerHTML = '';
+  ieEditors.choiceWraps = [];
+  for (let i = 0; i < count; i++) {
+    const { row, wrap } = makeIeChoiceRow(qIdx, i, vals[i] || '', ieEditors.correctIdx === i);
+    list.appendChild(row); ieEditors.choiceWraps.push(wrap);
+  }
+  const addBtn = document.getElementById(`ie-add-btn-${qIdx}`);
+  if (addBtn) addBtn.disabled = count >= 6;
+}
+
+function makeIeChoiceRow(qIdx, cIdx, value, isCorrect) {
+  const row = document.createElement('div');
+  row.className = 'choice-row'; row.dataset.idx = cIdx;
+  const rw = document.createElement('div');
+  rw.className = 'choice-radio-wrap';
+  rw.innerHTML = `<input type="radio" name="ie-correct-${qIdx}" value="${cIdx}" title="Mark as correct answer" ${isCorrect ? 'checked' : ''} /><span class="choice-label-idx">${LETTERS[cIdx]}</span>`;
+  const w = createEditor(null, { placeholder: `Choice ${LETTERS[cIdx]}…`, small: true });
+  setEditorContent(w, value || '');
+  const del = document.createElement('button');
+  del.className = 'btn-icon'; del.title = 'Remove choice'; del.innerHTML = '&#x2715;';
+  del.disabled = ieEditors.choiceCount <= 2;
+  del.addEventListener('click', () => App.ieRemoveChoice(qIdx, cIdx));
+  row.append(rw, w, del);
+  return { row, wrap: w };
+}
+
+function getIeChoices() {
+  if (!ieEditors) return [];
+  return ieEditors.choiceWraps.map(w => getEditorContent(w));
+}
+
+function getIeCorrect(qIdx) {
+  const r = document.querySelector(`#ie-choices-${qIdx} input[type="radio"]:checked`);
+  return r ? parseInt(r.value, 10) : 0;
+}
+
+function ieAddChoice(qIdx) {
+  if (!ieEditors || ieEditors.choiceCount >= 6) return;
+  const vals = getIeChoices(); vals.push('');
+  buildIeChoiceRows(qIdx, vals, getIeCorrect(qIdx));
+}
+
+function ieRemoveChoice(qIdx, cIdx) {
+  if (!ieEditors || ieEditors.choiceCount <= 2) return;
+  const vals = getIeChoices(), c = getIeCorrect(qIdx);
+  vals.splice(cIdx, 1);
+  buildIeChoiceRows(qIdx, vals, c > cIdx ? c - 1 : (c === cIdx ? 0 : c));
+}
+
+function saveInlineEdit(idx) {
+  if (!ieEditors) return;
+  const qtype = document.getElementById(`ie-type-${idx}`).value;
+  if (!qtype) { toast('Please select a type.', 'error'); return; }
+  const qt = getEditorContent(ieEditors.qWrap);
+  if (!qt && qtype !== 'Context Based') { toast('Question text is required.', 'error'); return; }
+  const obj = { question: qt, type: qtype };
+  if (qtype === 'Multi Choice') {
+    const ch = getIeChoices();
+    if (ch.filter(c => c).length < 2) { toast('At least 2 choices must have content.', 'error'); return; }
+    let ci = getIeCorrect(idx), corrMap = 0, corrMapped = false;
+    const final = [];
+    ch.forEach((c, i) => { if (c) { if (i === ci && !corrMapped) { corrMap = final.length; corrMapped = true; } final.push(c); } });
+    if (!corrMapped) corrMap = 0;
+    obj.choices = final;
+    obj.answer = corrMap;
+  } else if (qtype === 'Arrange in logical sequence') {
+    const items = getIeSeqItems().filter(c => c);
+    if (items.length < 2) { toast('At least 2 items are required.', 'error'); return; }
+    const ans = ieEditors.answerWrap ? getEditorContent(ieEditors.answerWrap) : '';
+    if (!ans) { toast('Correct sequence answer is required.', 'error'); return; }
+    obj.choices = items;
+    obj.answer = ans;
+  } else if (qtype === 'True or False') {
+    const r = document.querySelector(`input[name="ie-tf-${idx}"]:checked`);
+    obj.answer  = r ? r.value : 'True';
+  } else if (qtype === 'Context Based') {
+    const ctx = ieEditors.contextWrap ? getEditorContent(ieEditors.contextWrap) : '';
+    if (!ctx) { toast('Context is required.', 'error'); return; }
+    const store = _csStore(idx);
+    if (store.length === 0) { toast('Add at least one question.', 'error'); return; }
+    function ieFlagError(el) { if (!el) return; el.classList.remove('field-error'); void el.offsetWidth; el.classList.add('field-error'); setTimeout(() => el.classList.remove('field-error'), 2000); }
+    const innerQuestions = [];
+    for (let i = 0; i < store.length; i++) {
+      const iq = _csBuildInnerQ(idx, i, ieFlagError);
+      if (!iq) return;
+      innerQuestions.push(iq);
+    }
+    questions[idx] = { context: ctx, questions: innerQuestions };
+    editingIdx = null; ieEditors = null;
+    renderList(); updateDlBtn();
+    toast(`Question ${idx + 1} updated!`, 'success');
+    return;
+  } else {
+    const ans = ieEditors.answerWrap ? getEditorContent(ieEditors.answerWrap) : '';
+    if (!ans) { toast('Answer is required.', 'error'); return; }
+    obj.choices = [];
+    obj.answer = ans;
+  }
+  const reason = getEditorContent(ieEditors.reasonWrap);
+  if (reason) obj.reason = reason;
+  questions[idx] = obj;
+  editingIdx = null; ieEditors = null;
+  renderList(); updateDlBtn();
+  toast(`Question ${idx + 1} updated!`, 'success');
+}
+
+// ── CHOICE ADD / REMOVE ──────────────────────────────────────────────
+function addChoice() { if (choiceCount >= 6) return; buildChoiceRows(choiceCount + 1, getChoices(), getCorrect()); }
+function removeChoice(idx) { if (choiceCount <= 2) return; const v = getChoices(), c = getCorrect(); v.splice(idx, 1); buildChoiceRows(choiceCount - 1, v, c > idx ? c - 1 : (c === idx ? 0 : c)); }
+
+// ── QUESTION LIST ─────────────────────────────────────────────────────
+function renderList() {
+  const el = document.getElementById('q-list');
+  document.getElementById('q-count').textContent = questions.length;
+  if (!questions.length) { el.innerHTML = '<div class="empty-state"><div class="icon">&#x1F5C2;&#xFE0F;</div><p>No questions yet &mdash; fill in the form above and click <strong>Save Question</strong>.</p></div>'; return; }
+  el.innerHTML = '';
+  questions.forEach((q, i) => {
+    const d = document.createElement('div');
+    const isEditing = editingIdx === i;
+    d.className = 'q-item' + (isEditing ? ' editing q-item-exp' : '');
+    const isCtxGroup = q && Array.isArray(q.questions) && 'context' in q;
+    const innerQ0 = isCtxGroup ? (q.questions[0] || {}) : q;
+    const pq = stripHtml(innerQ0.question || (isCtxGroup ? q.context : ''));
+    if (isEditing) {
+      d.innerHTML = `
+        <div class="ie-hdr">
+          <div class="q-num">${i + 1}</div>
+          <div class="ie-hdr-text">Editing: ${escHtml(pq.substring(0, 70))}${pq.length > 70 ? '&hellip;' : ''}</div>
+          <div class="q-actions">
+            <button class="btn-icon move" onclick="App.moveQ(${i},-1)" ${i === 0 ? 'disabled' : ''}>&#x25B2;</button>
+            <button class="btn-icon move" onclick="App.moveQ(${i}, 1)" ${i === questions.length - 1 ? 'disabled' : ''}>&#x25BC;</button>
+            <button class="btn-icon" onclick="App.deleteQ(${i})">&#x2715;</button>
+          </div>
+        </div>
+        <div class="ie-body"><div id="ie-container-${i}"></div></div>`;
+    } else {
+      const dispType   = isCtxGroup ? 'Context Based' : q.type;
+      const dispAnswer = isCtxGroup ? innerQ0.answer   : q.answer;
+      const meta = [
+        dispType ? '&#x1F4CC; ' + escHtml(dispType) : '',
+        typeof dispAnswer === 'number'
+          ? '&#x2705; ' + LETTERS[dispAnswer]
+          : (dispAnswer ? '&#x2705; ' + escHtml(stripHtml(String(dispAnswer)).substring(0, 30)) + (stripHtml(String(dispAnswer)).length > 30 ? '&hellip;' : '') : '')
+      ].filter(Boolean);
+      d.innerHTML = `
+        <div class="q-num">${i + 1}</div>
+        <div class="q-body">
+          <div class="q-text" title="${escAttr(pq)}">${escHtml(pq)}</div>
+          <div class="q-meta">${meta.map(m => `<span>${m}</span>`).join('')}</div>
+        </div>
+        <div class="q-actions">
+          <button class="btn-icon move" onclick="App.moveQ(${i},-1)" ${i === 0 ? 'disabled' : ''}>&#x25B2;</button>
+          <button class="btn-icon move" onclick="App.moveQ(${i}, 1)" ${i === questions.length - 1 ? 'disabled' : ''}>&#x25BC;</button>
+          <button class="btn-icon edit" onclick="App.editQuestion(${i})">&#x270E;</button>
+          <button class="btn-icon"      onclick="App.deleteQ(${i})">&#x2715;</button>
+        </div>`;
+    }
+    el.appendChild(d);
+  });
+  if (editingIdx !== null) setupInlineEditor(editingIdx);
+}
+
+function deleteQ(idx) {
+  if (!confirm(`Delete question ${idx + 1}? This cannot be undone.`)) return;
+  if (editingIdx === idx) { editingIdx = null; ieEditors = null; }
+  else if (editingIdx !== null && editingIdx > idx) editingIdx--;
+  questions.splice(idx, 1);
+  renderList(); updateDlBtn();
+  toast('Question deleted.', 'success');
+}
+function moveQ(idx, dir) {
+  const ni = idx + dir;
+  if (ni < 0 || ni >= questions.length) return;
+  if (editingIdx !== null) { editingIdx = null; ieEditors = null; }
+  [questions[idx], questions[ni]] = [questions[ni], questions[idx]];
+  renderList();
+}
+
+// ── DOWNLOAD ─────────────────────────────────────────────────────────
+function downloadJSON() {
+  if (!questions.length) { toast('No questions to download yet.', 'error'); return; }
+  const fn = prompt('Filename:', 'questions.json');
+  if (!fn) return;
+  const name = fn.endsWith('.json') ? fn : fn + '.json';
+  const url  = URL.createObjectURL(new Blob([JSON.stringify(questions, null, 2)], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Downloaded as "${name}"`, 'success');
+}
+function updateDlBtn() {
+  const has = questions.length > 0;
+  document.getElementById('btn-download').disabled  = !has;
+  document.getElementById('btn-download2').disabled = !has;
+}
+
+// ── JSON PREVIEW ──────────────────────────────────────────────────────
+function previewJSON() {
+  if (!questions.length) { toast('No questions yet.', 'error'); return; }
+  document.getElementById('json-preview-content').textContent = JSON.stringify(questions, null, 2);
+  document.getElementById('json-overlay').classList.add('open');
+}
+function closeJsonModal() { document.getElementById('json-overlay').classList.remove('open'); }
+function jsonOverlayClick(e) { if (e.target.id === 'json-overlay') closeJsonModal(); }
+
+// ── IMPORT ────────────────────────────────────────────────────────────
+function triggerImport() { document.getElementById('import-file-input').value = ''; document.getElementById('import-file-input').click(); }
+function handleImport(e) { const f = e.target.files[0]; if (f) readJSON(f); }
+function dragOver(e) { e.preventDefault(); document.getElementById('import-drop').classList.add('dragover'); }
+function dragLeave() { document.getElementById('import-drop').classList.remove('dragover'); }
+function dropFile(e) {
+  e.preventDefault(); dragLeave();
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  if (!f.name.endsWith('.json')) { toast('Please drop a .json file.', 'error'); return; }
+  readJSON(f);
+}
+function readJSON(file) {
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if (!Array.isArray(d)) throw new Error('Expected a JSON array.');
+      if (questions.length && !confirm(`Replace ${questions.length} existing question(s) with ${d.length} imported?`)) return;
+      questions = d; cancelInlineEdit(); renderList(); updateDlBtn();
+      toast(`Imported ${d.length} question(s) from "${file.name}"`, 'success');
+    } catch(err) { toast('Invalid JSON: ' + err.message, 'error'); }
+  };
+  r.readAsText(file);
+}
+
+// ── EDITOR MODE TOGGLE ────────────────────────────────────────────────
+function toggleEditorMode() {
+  editorMode = editorMode === 'wysiwyg' ? 'raw' : 'wysiwyg';
+  const btn = document.getElementById('editor-mode-btn');
+  document.querySelectorAll('.wysiwyg-wrap').forEach(wrap => {
+    if (editorMode === 'raw') { wrap._raw.value = getHTML(wrap._ed); wrap.classList.add('raw-mode'); }
+    else { wrap._ed.innerHTML = wrap._raw.value; wrap.classList.remove('raw-mode'); }
+  });
+  btn.innerHTML = editorMode === 'raw' ? '&#x1F3A8; Visual' : '&#x1F4DD; Raw HTML';
+  btn.classList.toggle('raw-active', editorMode === 'raw');
+  refreshPreview();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function stripHtml(h) { const d = document.createElement('div'); d.innerHTML = h; return (d.textContent || d.innerText || '').replace(/\s+/g,' ').trim(); }
+let toastT = null;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ' + (type || '');
+  clearTimeout(toastT); toastT = setTimeout(() => { el.className = 'toast'; }, 3000);
+}
+
+// ── PUBLIC API ────────────────────────────────────────────────────────
+window.App = {
+  refreshPreview, saveQuestion, clearForm, onTypeChange,
+  cancelInlineEdit, saveInlineEdit,
+  ieAddChoice, ieRemoveChoice, ieOnTypeChange,
+  ieAddSeqItem, ieRemoveSeqItem,
+  addChoice, removeChoice, addSeqItem, removeSeqItem,
+  editQuestion, deleteQ, moveQ,
+  ctxSubQTypeChange, addCtxSubQ, removeCtxSubQ,
+  ctxSubQAddChoice, ctxSubQRemoveChoice,
+  ctxSubQAddSeqItem, ctxSubQRemoveSeqItem,
+  downloadJSON, previewJSON, closeJsonModal, jsonOverlayClick,
+  triggerImport, handleImport, dragOver, dragLeave, dropFile,
+  latexOverlayClick, closeLatexModal, latexPreview, insertLatex,
+  imgOverlayClick, closeImgModal, imgPreviewUpdate, insertImage,
+  tableOverlayClick, closeTableModal, insertTable,
+  tblAddRowAbove, tblAddRowBelow, tblRemoveRow,
+  tblAddColLeft, tblAddColRight, tblRemoveCol, tblDeleteTable,
+  tblInsertLineBefore, tblInsertLineAfter, toggleEditorMode,
+};
+
+function waitKatex() { if (typeof katex !== 'undefined') init(); else setTimeout(waitKatex, 50); }
+waitKatex();
+
+})();
+</script>
+</body>
+</html>

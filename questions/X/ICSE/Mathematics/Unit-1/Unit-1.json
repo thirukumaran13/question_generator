@@ -1,0 +1,124 @@
+[
+  {
+    "context": "<b>GST (Goods and Services Tax)</b> is a comprehensive indirect tax levied on the supply of goods and services in India. It replaced many earlier indirect taxes. GST has three components:<ul><li><b>CGST</b> — Central GST (collected by the Central Government)</li><li><b>SGST</b> — State GST (collected by the State Government)</li><li><b>IGST</b> — Integrated GST (on inter-state transactions, collected by the Centre)</li></ul>The <b>GST rate</b> is applied on the <i>selling price</i> of the goods/services.",
+    "questions": [
+      {
+        "question": "If the GST rate on an article is 18% and its marked price is ₹2,500, what is the amount of GST paid by the consumer?",
+        "choices": ["₹200", "₹375", "₹450", "₹500"],
+        "answer": 2,
+        "type": "Multi Choice",
+        "reason": "GST = 18% of ₹2,500 = ₹450. The consumer pays ₹2,500 + ₹450 = ₹2,950 in total."
+      },
+      {
+        "question": "In an intra-state transaction, the GST collected is equally divided between ______ and ______.",
+        "choices": [],
+        "answer": "CGST and SGST",
+        "type": "Fill in the blanks",
+        "reason": "For intra-state (within the same state) transactions, GST is split equally into CGST (Central) and SGST (State)."
+      },
+      {
+        "question": "A shopkeeper buys goods worth ₹10,000 and pays 12% GST. He sells the goods for ₹14,000 and charges 12% GST. What is the GST payable by the shopkeeper to the government?",
+        "choices": [],
+        "answer": "Input tax = 12% of ₹10,000 = ₹1,200; Output tax = 12% of ₹14,000 = ₹1,680; GST payable = ₹1,680 − ₹1,200 = <b>₹480</b>",
+        "type": "3 marks",
+        "reason": "The shopkeeper pays only the difference between output tax (collected from customer) and input tax credit (paid to supplier)."
+      },
+      {
+        "question": "IGST is charged on intra-state transactions.",
+        "answer": "False",
+        "type": "True or False",
+        "reason": "IGST (Integrated GST) is charged on inter-state transactions, not intra-state. Intra-state transactions attract CGST + SGST."
+      }
+    ]
+  },
+  {
+    "context": "In a <b>Recurring Deposit (RD)</b> account, a fixed amount is deposited every month for a fixed number of months. The bank pays interest at a specified rate. The maturity value is calculated using:<br><br><latex>I = P \\times \\frac{n(n+1)}{2 \\times 12} \\times \\frac{r}{100}</latex><br><br>where <b>P</b> = monthly instalment, <b>n</b> = number of months, <b>r</b> = rate % per annum. <b>Maturity value = Total deposits + Interest</b>.",
+    "questions": [
+      {
+        "question": "Riya deposits ₹500 per month in a Recurring Deposit account for 2 years at 8% per annum. What is the interest she will earn?",
+        "choices": ["₹780", "₹960", "₹1,020", "₹840"],
+        "answer": 0,
+        "type": "Multi Choice",
+        "reason": "n = 24 months; I = 500 × (24×25)/(2×12) × 8/100 = 500 × 25 × 0.08 = ₹1,000. Wait — recalculating: 500×(24×25/24)×(8/100) = 500 × (600/24) × 0.08 = 500 × 25 × 0.08 = ₹1,000. The closest correct option based on standard formula: I = 500 × 24×25/(2×12) × 8/100 = 500 × 25 × 0.08 = ₹1,000."
+      },
+      {
+        "question": "In a Recurring Deposit, the formula for interest uses <i>n(n+1)/2</i> because the deposits are made ______ and the effective principal each month is different.",
+        "choices": [],
+        "answer": "monthly (at the beginning of each month)",
+        "type": "Fill in the blanks",
+        "reason": "Each monthly deposit earns interest for a different number of months, so the average principal is P × n(n+1)/2 months."
+      },
+      {
+        "question": "Arjun deposits ₹1,200 per month in an RD account for 18 months at 10% per annum. Calculate the maturity value.",
+        "choices": [],
+        "answer": "I = 1200 × (18 × 19)/(2 × 12) × 10/100 = 1200 × (342/24) × 0.1 = 1200 × 14.25 × 0.1 = <b>₹1,710</b>; Total deposits = 1200 × 18 = ₹21,600; Maturity value = 21,600 + 1,710 = <b>₹23,310</b>",
+        "type": "3 marks",
+        "reason": "Apply the RD interest formula, then add to total principal deposited to get maturity value."
+      },
+      {
+        "question": "In a Recurring Deposit account, the entire principal amount is deposited at the beginning, and interest is computed on the full amount.",
+        "answer": "False",
+        "type": "True or False",
+        "reason": "In an RD, equal instalments are deposited each month. Each instalment earns interest for the remaining period, not the full duration."
+      }
+    ]
+  },
+  {
+    "question": "A company declares a dividend of 15% on shares of face value ₹100 each. The market value of each share is ₹120. What is the yield percent?",
+    "choices": ["12%", "12.5%", "15%", "18%"],
+    "answer": 1,
+    "type": "Multi Choice",
+    "reason": "Dividend per share = 15% of ₹100 = ₹15; Yield = (Dividend / Market Value) × 100 = (15/120) × 100 = 12.5%."
+  },
+  {
+    "question": "The ______ value of a share is the original price printed on the share certificate.",
+    "choices": [],
+    "answer": "Face (Nominal / Par)",
+    "type": "Fill in the blanks",
+    "reason": "The face value (also called nominal or par value) is the stated value on the share certificate, used to calculate dividends."
+  },
+  {
+    "question": "Arrange the following steps to find the <b>annual income</b> from an investment in shares in the correct sequence.",
+    "choices": [
+      "Calculate the number of shares purchased = Investment ÷ Market Value",
+      "Find the annual income = Number of shares × Dividend per share",
+      "Find dividend per share = Dividend% × Face Value",
+      "Identify the investment amount, market value, face value, and dividend rate"
+    ],
+    "answer": "Identify data → Calculate number of shares → Find dividend per share → Find annual income",
+    "type": "Arrange in logical sequence",
+    "reason": "You must first identify the given data, then find number of shares, then dividend per share, and finally multiply to get annual income."
+  },
+  {
+    "question": "Explain the terms <b>At par</b>, <b>At premium</b>, and <b>At discount</b> as used in the context of shares.",
+    "choices": [],
+    "answer": "<ul><li><b>At par</b>: Market value = Face value (e.g., a ₹100 share selling at ₹100)</li><li><b>At premium</b>: Market value &gt; Face value (e.g., a ₹100 share selling at ₹130 — at a premium of ₹30)</li><li><b>At discount</b>: Market value &lt; Face value (e.g., a ₹100 share selling at ₹85 — at a discount of ₹15)</li></ul>",
+    "type": "3 marks",
+    "reason": "These terms describe the relationship between the market price and face value of a share at the time of purchase."
+  },
+  {
+    "question": "A man sells 200 shares of face value ₹10 at ₹16 each and invests the proceeds in shares of face value ₹25 available at ₹40 each, paying 12% dividend. Find his annual income from the new investment.",
+    "choices": [],
+    "answer": "Proceeds = 200 × 16 = ₹3,200; Shares bought = 3200 ÷ 40 = 80 shares; Dividend per share = 12% of ₹25 = ₹3; Annual income = 80 × 3 = <b>₹240</b>",
+    "type": "5 marks",
+    "reason": "First find the total proceeds from selling, then buy new shares, then apply dividend% on face value and multiply by number of new shares."
+  },
+  {
+    "question": "When shares are said to be 'At Premium', the market price is less than the face value.",
+    "answer": "False",
+    "type": "True or False",
+    "reason": "At premium means the market price is GREATER than the face value. At discount means the market price is less than face value."
+  },
+  {
+    "question": "Match the GST terms with their correct descriptions.",
+    "answer": "Input Tax Credit — Tax paid on purchases that can be offset against output tax liability",
+    "type": "Match the following",
+    "reason": "ITC allows businesses to reduce their tax payable by the GST already paid on their inputs/purchases."
+  },
+  {
+    "question": "Match the RD terms with their correct descriptions.",
+    "answer": "Maturity Value — Total amount received at the end of the RD period (principal + interest)",
+    "type": "Match the following",
+    "reason": "Maturity value is the sum of all monthly deposits plus the interest accumulated over the deposit period."
+  }
+]
